@@ -1,0 +1,11 @@
+# 1) guaranteed airflow
+20008 2E 4 1C 1C 00 00
+sleep 2000
+20008 2D 128 00 00 00 00
+# 2) hand control back to BIOS: fan mode = Default (0x30)
+20008 1A 4 FF 30 00 00
+sleep 5000
+20008 2D 128 00 00 00 00
+20008 28 128 00 00 00 00
+sleep 8000
+20008 2D 128 00 00 00 00

@@ -1,0 +1,9 @@
+# read-only: retry fan type/level with a 4-byte zero payload and bigger outputs
+20008 2C 4 00 00 00 00
+20008 2D 4 00 00 00 00
+20008 2D 128 00 00 00 00
+20008 2C 128 00 00 00 00
+20008 2D 4 01
+20008 2B 4
+20008 2B 128
+20008 28 4

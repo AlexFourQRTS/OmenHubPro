@@ -1,0 +1,24 @@
+# build output
+*.exe
+*.pdb
+
+# third-party tools downloaded locally (RyzenAdj etc.)
+tools/
+
+# probe results and scratch output
+probe/r*.txt
+probe/*-result.txt
+probe/hw.txt
+probe/smart.txt
+probe/*.xml
+
+# personal scripts
+updates-off.bat
+updates-on.bat
+OffAutoUpdate.txt
+
+# editor / OS
+.vs/
+.vscode/
+Thumbs.db
+desktop.ini

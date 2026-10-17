@@ -1,0 +1,14 @@
+# baseline
+20008 2D 128 00 00 00 00
+# manual fan level: 0x1C = 2800 rpm on both fans
+20008 2E 4 1C 1C 00 00
+sleep 5000
+20008 2D 128 00 00 00 00
+sleep 5000
+20008 2D 128 00 00 00 00
+20008 26 4
+# back to automatic (fan max off, level 0)
+20008 27 4 00 00 00 00
+20008 2E 4 00 00 00 00
+sleep 6000
+20008 2D 128 00 00 00 00

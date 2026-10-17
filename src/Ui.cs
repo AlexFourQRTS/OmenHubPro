@@ -203,6 +203,8 @@ namespace OmenHub
                     TextRenderer.DrawText(g, t + "°", Th.F(8, false), new Rectangle((int)PX(t) - 20, Height - 26, 40, 16), Th.Sub, TextFormatFlags.HorizontalCenter);
                 }
             }
+            using (var rb = new SolidBrush(Color.FromArgb(34, Th.Bad))) g.FillRectangle(rb, PX(80), Y0, Width - 16 - PX(80), Height - 30 - Y0);
+            TextRenderer.DrawText(g, "аварийный обдув ≥ 80°", Th.F(8, true), new Rectangle((int)PX(80) + 4, Y0 + 2, 150, 16), Th.Bad, TextFormatFlags.Left);
             if (Now >= MinT)
                 using (var pen = new Pen(Th.Accent2, 1.5f) { DashStyle = DashStyle.Dash }) g.DrawLine(pen, PX(Math.Min(Now, MaxT)), Y0, PX(Math.Min(Now, MaxT)), Height - 30);
             if (T.Length < 2) return;
@@ -218,7 +220,30 @@ namespace OmenHub
                 TextRenderer.DrawText(g, T[drag] + "° → " + R[drag] + " об/мин", Th.F(9, true), new Rectangle((int)pts[drag].X - 70, (int)pts[drag].Y - 30, 140, 18), Th.Text, TextFormatFlags.HorizontalCenter);
         }
         protected override void OnMouseDown(MouseEventArgs e)
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
         {
+            if (e.Button != MouseButtons.Left || T.Length >= 12) return;
+            double t = MinT + (e.X - X0) / (double)(Width - X0 - 16) * (MaxT - MinT);
+            double r = (1 - (e.Y - Y0) / (double)(Height - Y0 - 30)) * MaxR;
+            int tt = (int)Math.Round(Math.Max(MinT + 1, Math.Min(MaxT - 1, t))), rr = Math.Max(0, Math.Min(MaxR, (int)Math.Round(r / 100.0) * 100));
+            foreach (int x in T) if (x == tt) return;
+            var nt = new System.Collections.Generic.List<int>(T); var nr = new System.Collections.Generic.List<int>(R);
+            int idx = 0; while (idx < nt.Count && nt[idx] < tt) idx++;
+            nt.Insert(idx, tt); nr.Insert(idx, rr);
+            T = nt.ToArray(); R = nr.ToArray(); Invalidate(); if (Edited != null) Edited(this, EventArgs.Empty);
+        }
+        void RemoveNear(int mx, int my)
+        {
+            if (T.Length <= 3) return;
+            int best = -1; double bd = 14 * 14;
+            for (int i = 0; i < T.Length; i++) { double dx = PX(T[i]) - mx, dy = PY(R[i]) - my, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } }
+            if (best < 0) return;
+            var nt = new System.Collections.Generic.List<int>(T); var nr = new System.Collections.Generic.List<int>(R);
+            nt.RemoveAt(best); nr.RemoveAt(best);
+            T = nt.ToArray(); R = nr.ToArray(); Invalidate(); if (Edited != null) Edited(this, EventArgs.Empty);
+        }
+        {
+            if (e.Button == MouseButtons.Right) { RemoveNear(e.X, e.Y); return; }
             drag = -1; double best = 14 * 14;
             for (int i = 0; i < T.Length; i++)
             {

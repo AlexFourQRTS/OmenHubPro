@@ -175,7 +175,11 @@ namespace OmenHub
             curve = new Curve { Left = 16, Top = 54, Width = 770, Height = 256 }; c.Controls.Add(curve);
             segFan.Changed += delegate { LoadCurve(); };
             segSrc.Changed += delegate { if (segFan.Sel == 0) Cfg.SrcCpu = segSrc.Sel; else Cfg.SrcGpu = segSrc.Sel; dirty = true; };
-            curve.Edited += delegate { dirty = true; };
+            curve.Edited += delegate
+            {
+                if (segFan.Sel == 0) { Cfg.TCpu = curve.T; Cfg.RCpu = curve.R; } else { Cfg.TGpu = curve.T; Cfg.RGpu = curve.R; }
+                dirty = true;
+            };
             LoadCurve();
         }
         void LoadCurve()
@@ -328,6 +332,7 @@ namespace OmenHub
             if (dirty) { dirty = false; Cfg.Save(); }
             var s = Engine.S;
             status.Text = s.Status + "    |    режим: " + segMode.Items[Cfg.FanMode];
+            status.ForeColor = s.Alert ? Th.Bad : Th.Sub; status.Font = Th.F(8.5f, s.Alert);
             if (!pages[0].Visible && !pages[1].Visible) return;
 
             lFanCpu.Text = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; bFanCpu.V = Math.Max(0, s.FanCpu) / 6000.0; bFanCpu.Invalidate();

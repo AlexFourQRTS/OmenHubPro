@@ -15,10 +15,10 @@ namespace OmenHub
         public static bool Dark = true;
         public static int FanMode = 0;            // 0 auto, 1 max, 2 manual, 3 curve
         public static int ManCpu = 2400, ManGpu = 2400;
-        public static int[] TCpu = { 40, 50, 60, 70, 80, 90 };
-        public static int[] RCpu = { 0, 1800, 2400, 3200, 4000, 4400 };
-        public static int[] TGpu = { 40, 50, 60, 70, 80, 90 };
-        public static int[] RGpu = { 0, 1800, 2400, 3200, 4000, 4400 };
+        public static int[] TCpu = { 40, 50, 60, 70, 78 };
+        public static int[] RCpu = { 1800, 2200, 3000, 4000, 5500 };
+        public static int[] TGpu = { 40, 50, 60, 70, 78 };
+        public static int[] RGpu = { 1800, 2200, 3000, 4000, 5500 };
         public static int SrcCpu = 0, SrcGpu = 1; // 0 system, 1 gpu, 2 max of all
         public static int CpuW = 45;
 
@@ -34,6 +34,15 @@ namespace OmenHub
         static string FilePath { get { return Path.Combine(Dir, "settings.ini"); } }
 
         static string J(int[] a) { string[] s = new string[a.Length]; for (int i = 0; i < a.Length; i++) s[i] = a[i].ToString(); return string.Join(",", s); }
+        static int[] Parse(string v)
+        {
+            if (v == null) return null;
+            string[] s = v.Split(',');
+            if (s.Length < 3 || s.Length > 12) return null;
+            int[] t = new int[s.Length];
+            for (int i = 0; i < s.Length; i++) { if (!int.TryParse(s[i], out t[i])) return null; }
+            return t;
+        }
         static void P(string v, int[] dst)
         {
             if (v == null) return;
@@ -52,6 +61,7 @@ namespace OmenHub
                 sb.AppendLine("Dark=" + (Dark ? 1 : 0));
                 sb.AppendLine("FanMode=" + FanMode);
                 sb.AppendLine("ManCpu=" + ManCpu); sb.AppendLine("ManGpu=" + ManGpu);
+                sb.AppendLine("CurveV=2");
                 sb.AppendLine("TCpu=" + J(TCpu)); sb.AppendLine("RCpu=" + J(RCpu));
                 sb.AppendLine("TGpu=" + J(TGpu)); sb.AppendLine("RGpu=" + J(RGpu));
                 sb.AppendLine("SrcCpu=" + SrcCpu); sb.AppendLine("SrcGpu=" + SrcGpu);
@@ -76,10 +86,14 @@ namespace OmenHub
                 FanMode = G(d, "FanMode", 0);
                 ManCpu = G(d, "ManCpu", ManCpu); ManGpu = G(d, "ManGpu", ManGpu);
                 string v;
-                if (d.TryGetValue("TCpu", out v)) P(v, TCpu);
-                if (d.TryGetValue("RCpu", out v)) P(v, RCpu);
-                if (d.TryGetValue("TGpu", out v)) P(v, TGpu);
-                if (d.TryGetValue("RGpu", out v)) P(v, RGpu);
+                if (G(d, "CurveV", 1) >= 2)   // v1 curves had unsafe near-zero defaults: ignore them
+                {
+                    int[] a, b;
+                    d.TryGetValue("TCpu", out v); a = Parse(v); d.TryGetValue("RCpu", out v); b = Parse(v);
+                    if (a != null && b != null && a.Length == b.Length) { TCpu = a; RCpu = b; }
+                    d.TryGetValue("TGpu", out v); a = Parse(v); d.TryGetValue("RGpu", out v); b = Parse(v);
+                    if (a != null && b != null && a.Length == b.Length) { TGpu = a; RGpu = b; }
+                }
                 SrcCpu = G(d, "SrcCpu", SrcCpu); SrcGpu = G(d, "SrcGpu", SrcGpu);
                 CpuW = G(d, "CpuW", CpuW);
             }
@@ -242,6 +256,7 @@ namespace OmenHub
         public double[] Zones = new double[0];
         public int SysTemp = -1;
         public string Status = "";
+        public bool Alert;
     }
 
     // ---------------------------------------------------------------- engine
@@ -337,16 +352,18 @@ namespace OmenHub
             }
         }
 
-        static int Eval(int[] t, int[] r, double x)
+        static int Eval(int[] tt, int[] rr, double x)
         {
+            int[] t = tt, r = rr; int n = Math.Min(t.Length, r.Length);
+            if (n == 0) return 0;
             if (x <= t[0]) return r[0];
-            for (int i = 1; i < t.Length; i++)
+            for (int i = 1; i < n; i++)
                 if (x <= t[i])
                 {
                     double f = (x - t[i - 1]) / Math.Max(1, t[i] - t[i - 1]);
                     return (int)(r[i - 1] + f * (r[i] - r[i - 1]));
                 }
-            return r[r.Length - 1];
+            return r[n - 1];
         }
         static double Src(int src, Snap s)
         {
@@ -354,26 +371,43 @@ namespace OmenHub
             return src == 0 ? sys : src == 1 ? (gpu >= 0 ? gpu : sys) : Math.Max(sys, gpu);
         }
 
+        public const double AlertOn = 80, AlertOff = 74;
+        static DateTime emergencySince = DateTime.MinValue;
+        static int smC = -1, smG = -1;
+        static int Ramp(int cur, int tgt) { return tgt > cur ? Math.Min(tgt, cur + 800) : Math.Max(tgt, cur - 200); }
+
         static void Control(Snap s)
         {
             if (!biosOk) return;
             int mode = Cfg.FanMode;
             double hot = Math.Max(s.SysTemp, s.GpuTemp);
 
-            if (hot >= 95)   // failsafe: never let it cook
+            // Hard thermal alert: ignores every user setting, both fans to max.
+            if (!emergency && hot >= AlertOn)
             {
-                if (!emergency) { Log.W("EMERGENCY max fans at " + (int)hot + "C"); Bios.SetFanMax(true); emergency = true; s.Status = "АВАРИЙНЫЙ ОБДУВ: " + (int)hot + " °C"; }
-                return;
+                emergency = true; emergencySince = DateTime.Now; lastSet = DateTime.MinValue;
+                Log.W("ALERT: " + (int)hot + "C (sys " + s.SysTemp + ", gpu " + s.GpuTemp + ") -> both fans MAX");
             }
-            if (emergency) { emergency = false; applied = -99; }
+            if (emergency)
+            {
+                if (hot <= AlertOff && (DateTime.Now - emergencySince).TotalSeconds >= 20)
+                {
+                    emergency = false; applied = -99; smC = smG = -1;
+                    Log.W("ALERT cleared at " + (int)hot + "C");
+                }
+                else
+                {
+                    if ((DateTime.Now - lastSet).TotalSeconds > 8) { Bios.SetFanMax(true); lastSet = DateTime.Now; }
+                    s.Alert = true; s.Status = "АВАРИЙНЫЙ ОБДУВ: " + (int)hot + " °C — оба кулера на максимум";
+                    return;
+                }
+            }
 
             bool force = false;
             if (mode != applied)
             {
-                if (mode == 0) Bios.SetFanMax(false);
-                else if (mode == 1) Bios.SetFanMax(true);
-                else Bios.SetFanMax(false);
-                applied = mode; force = true; lastC = lastG = -1;
+                if (mode == 1) Bios.SetFanMax(true); else Bios.SetFanMax(false);
+                applied = mode; force = true; lastC = lastG = -1; smC = smG = -1;
                 Log.W("fan mode -> " + mode);
             }
             if (mode == 1) { if ((DateTime.Now - lastSet).TotalSeconds > 20) { Bios.SetFanMax(true); lastSet = DateTime.Now; } return; }
@@ -381,8 +415,13 @@ namespace OmenHub
 
             int c, g;
             if (mode == 2) { c = Cfg.ManCpu; g = Cfg.ManGpu; }
-            else { c = Eval(Cfg.TCpu, Cfg.RCpu, Src(Cfg.SrcCpu, s)); g = Eval(Cfg.TGpu, Cfg.RGpu, Src(Cfg.SrcGpu, s)); }
-            int floor = hot >= 85 ? 3600 : hot >= 75 ? 2600 : 0;   // safety floor
+            else
+            {
+                c = Eval(Cfg.TCpu, Cfg.RCpu, Src(Cfg.SrcCpu, s)); g = Eval(Cfg.TGpu, Cfg.RGpu, Src(Cfg.SrcGpu, s));
+                if (smC < 0) { smC = c; smG = g; } else { smC = Ramp(smC, c); smG = Ramp(smG, g); }
+                c = smC; g = smG;
+            }
+            int floor = hot >= 75 ? 3000 : hot >= 70 ? 2200 : 0;   // extra safety floor below the alert
             if (c < floor) c = floor; if (g < floor) g = floor;
 
             if (force || c != lastC || g != lastG || (DateTime.Now - lastSet).TotalSeconds > 10)

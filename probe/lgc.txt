@@ -1,0 +1,5 @@
+before: 802 MHz, 3090 MHz, 16.75 W, 49
+lgc 210,1500 -> GPU clocks set to "(gpuClkMin 210, gpuClkMax 1500)" for GPU 00000000:C3:00.0 All done.
+after:  570 MHz, 3090 MHz, 14.95 W, 49
+rgc -> All done.
+reset:  937 MHz, 3090 MHz, 13.10 W, 49

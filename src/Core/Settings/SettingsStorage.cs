@@ -38,6 +38,9 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("CpuW=" + AppSettings.CpuWatts);
                 text.AppendLine("ProAuto=" + (AppSettings.ProAutoEnabled ? 1 : 0));
                 text.AppendLine("BatteryEco=" + (AppSettings.BatteryEcoEnabled ? 1 : 0));
+                text.AppendLine("LightCtl=" + (AppSettings.LightingControlEnabled ? 1 : 0));
+                text.AppendLine("KeyboardLight=" + AppSettings.KeyboardLighting.Serialize());
+                text.AppendLine("BarLight=" + AppSettings.BarLighting.Serialize());
                 File.WriteAllText(FilePath, text.ToString());
             }
             catch (Exception error) { AppLog.Write("settings save failed: " + error.Message); }
@@ -59,6 +62,12 @@ namespace OmenHub.Core.Settings
                 AppSettings.CpuWatts = ReadNumber(values, "CpuW", AppSettings.CpuWatts);
                 AppSettings.ProAutoEnabled = ReadNumber(values, "ProAuto", 1) == 1;
                 AppSettings.BatteryEcoEnabled = ReadNumber(values, "BatteryEco", 1) == 1;
+                AppSettings.LightingControlEnabled = ReadNumber(values, "LightCtl", 0) == 1;
+                string lightingText;
+                values.TryGetValue("KeyboardLight", out lightingText);
+                AppSettings.KeyboardLighting = ZoneLighting.Deserialize(lightingText, AppSettings.KeyboardLighting);
+                values.TryGetValue("BarLight", out lightingText);
+                AppSettings.BarLighting = ZoneLighting.Deserialize(lightingText, AppSettings.BarLighting);
 
                 if (ReadNumber(values, "CurveV", 1) >= CurveFormatVersion)   // older formats had unsafe defaults
                 {

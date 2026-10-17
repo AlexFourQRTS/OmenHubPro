@@ -34,3 +34,7 @@ Controls the bottom light bar (4 zones) - see the corrected findings below.
   Windows' own LampArray API hangs when opening it, but the device answers raw HID feature reports
   (report 1 = attributes, 4 = multi-lamp update, 5 = range update, 6 = autonomous-mode control; all 51-byte feature reports).
   See `src/Hardware/Lighting/DirectLampArray.cs`.
+
+### Lamp index map of the HID LampArray (verified by the user with the range finder)
+- Lamps **0..102** = keyboard (6x20 grid; some cells have no key and stay dark).
+- Lamps **103..119** = bottom light bar (17 lamps). Keyboard and bar are independent: paint each range separately.

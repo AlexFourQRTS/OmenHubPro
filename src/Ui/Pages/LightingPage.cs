@@ -1,86 +1,40 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Threading;
 using System.Windows.Forms;
-using OmenHub.Hardware.Lighting;
+using OmenHub.Core.Settings;
 using OmenHub.Ui.Controls;
 
 namespace OmenHub.Ui.Pages
 {
-    /// <summary>
-    /// Lighting laboratory: numbered variants that flash yellow / blue (or toggle the backlight) by different methods.
-    /// The user reports which numbers visibly worked; every run is also written to the log.
-    /// </summary>
+    /// <summary>Lighting: who controls the lamps, then independent settings for the keyboard and the light bar.</summary>
     public sealed class LightingPage : PageBase
     {
-        private const int ColumnWidth = 384;
-        private const int RowHeight = 42;
-
-        private readonly List<ActionButton> variantButtons = new List<ActionButton>();
-        private readonly TextBox resultBox;
-        private volatile bool isRunning;
+        private readonly SegmentedControl controlSegments;
+        private readonly ZoneLightingCard keyboardCard;
+        private readonly ZoneLightingCard barCard;
 
         public LightingPage()
         {
-            Controls.Add(new LampRangeCard());
-            CardPanel card = PageKit.MakeCard(this, 24, 182, 802, 440, "Подсветка: лаборатория вариантов");
-            PageKit.MakeLabel(card, "Жми вариант и смотри на ноутбук (клавиатура, планка, логотип). Скажи мне номера, которые сработали.",
-                20, 42, 9, false, PageKit.RoleSub);
-
-            List<LightingVariant> variants = LightingVariantCatalog.Build();
-            for (int index = 0; index < variants.Count; index++)
-                AddVariantButton(card, variants[index], index);
-
-            int rows = (variants.Count + 1) / 2;
-            resultBox = new TextBox
+            CardPanel controlCard = PageKit.MakeCard(this, 24, 16, 802, 92, "Управление подсветкой");
+            controlSegments = PageKit.MakeSegments(controlCard, 20, 46, 420,
+                new[] { "Как у клавиатуры (по умолчанию)", "Управляет OmenHub" }, AppSettings.LightingControlEnabled ? 1 : 0);
+            PageKit.MakeLabel(controlCard, "Когда включено «Управляет OmenHub», приложение рисует клавиатуру и планку само;\nпри выходе клавиатура возвращается к своим эффектам.",
+                460, 44, 8.5f, false, PageKit.RoleSub);
+            controlSegments.SelectionChanged += delegate
             {
-                Left = 20, Top = 76 + rows * RowHeight + 10, Width = 762, Height = 440 - (76 + rows * RowHeight + 10) - 16,
-                Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical,
-                Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None
+                AppSettings.LightingControlEnabled = controlSegments.SelectedIndex == 1;
+                AppSettings.MarkChanged();
             };
-            card.Controls.Add(resultBox);
+
+            keyboardCard = new ZoneLightingCard("Клавиатура", "Все клавиши (лампы 0–102)", AppSettings.KeyboardLighting, 124);
+            barCard = new ZoneLightingCard("Нижняя планка", "17 ламп под экраном (лампы 103–119)", AppSettings.BarLighting, 380);
+            Controls.Add(keyboardCard);
+            Controls.Add(barCard);
         }
 
-        private void AddVariantButton(CardPanel card, LightingVariant variant, int index)
+        public override void LoadFromSettings()
         {
-            int column = index % 2;
-            int row = index / 2;
-            ActionButton button = PageKit.MakeButton(card, variant.Number + ". " + variant.Title,
-                20 + column * (ColumnWidth - 6), 76 + row * RowHeight, ColumnWidth - 12, false);
-            button.Click += delegate { RunVariant(variant); };
-            variantButtons.Add(button);
-        }
-
-        private void RunVariant(LightingVariant variant)
-        {
-            if (isRunning) return;
-            isRunning = true;
-            SetButtonsEnabled(false);
-            AppendResult("[" + variant.Number + "] запуск: " + variant.Title);
-            var worker = new Thread(delegate ()
-            {
-                string result = variant.Execute();
-                BeginInvoke(new Action(delegate
-                {
-                    AppendResult("[" + variant.Number + "] итог: " + result);
-                    SetButtonsEnabled(true);
-                    isRunning = false;
-                }));
-            });
-            worker.IsBackground = true;
-            worker.SetApartmentState(ApartmentState.STA);
-            worker.Start();
-        }
-
-        private void SetButtonsEnabled(bool enabled)
-        {
-            foreach (ActionButton button in variantButtons) button.Enabled = enabled;
-        }
-
-        private void AppendResult(string line)
-        {
-            resultBox.AppendText(DateTime.Now.ToString("HH:mm:ss") + "  " + line + "\r\n");
+            controlSegments.SelectedIndex = AppSettings.LightingControlEnabled ? 1 : 0;
+            keyboardCard.LoadFromSettings();
+            barCard.LoadFromSettings();
         }
     }
 }

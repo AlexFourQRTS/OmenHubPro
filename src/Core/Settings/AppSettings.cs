@@ -25,6 +25,9 @@ namespace OmenHub.Core.Settings
         public static int CpuWatts = 45;
         public static bool ProAutoEnabled = true;
         public static bool BatteryEcoEnabled = true;
+        public static bool LightingControlEnabled = false;   // false = the keyboard runs its own effects
+        public static ZoneLighting KeyboardLighting = ZoneLighting.Create(255, 138, 31, LightingEffect.Static);
+        public static ZoneLighting BarLighting = ZoneLighting.Create(155, 107, 255, LightingEffect.Static);
 
         private static volatile bool hasUnsavedChanges;
 

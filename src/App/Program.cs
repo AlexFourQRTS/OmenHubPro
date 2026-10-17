@@ -6,6 +6,7 @@ using OmenHub.Core.Processes;
 using OmenHub.Core.Settings;
 using OmenHub.Engine;
 using OmenHub.Hardware.Bios;
+using OmenHub.Hardware.Lighting;
 using OmenHub.Ui.Shell;
 using OmenHub.Ui.Theme;
 
@@ -32,11 +33,13 @@ namespace OmenHub.App
                 HookCrashLogging();
 
                 ControlEngine.Start();
+                LightingEngine.Start();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 var window = new MainForm(Array.IndexOf(arguments, "/autostart") >= 0);
                 ListenForQuitRequest(window);
                 Application.Run(window);
+                LightingEngine.Stop();
                 ControlEngine.Stop();
                 SettingsStorage.Save();
             }

@@ -47,6 +47,7 @@ namespace OmenHub.Core.Settings
         };
 
         public static int BarBrightnessPercent = 100;
+        public static volatile bool BarEnabled = true;   // false = bar switched off (black) through the BIOS table
 
         private static volatile bool hasUnsavedChanges;
 

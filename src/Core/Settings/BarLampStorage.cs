@@ -4,17 +4,15 @@ namespace OmenHub.Core.Settings
 {
     /// <summary>
     /// Which HID lamps physically belong to the bottom light bar (the rest are keys). The lamps 100-119 are mixed:
-    /// the bar shares them with the bottom keyboard row, so the user identifies them once on the keyboard page.
+    /// the bar shares them with the bottom keyboard row. By default every lamp is treated as a key (so the whole keyboard
+    /// lights up); the user may mark bar lamps on the keyboard page.
     /// </summary>
     public static class BarLampStorage
     {
-        private const int DefaultFirstBarLamp = 103;
-        private const int DefaultLastBarLamp = 119;
 
         public static void SetDefaults()
         {
             AppSettings.BarLamps.Clear();
-            for (int lamp = DefaultFirstBarLamp; lamp <= DefaultLastBarLamp; lamp++) AppSettings.BarLamps[lamp] = true;
         }
 
         public static string Serialize()

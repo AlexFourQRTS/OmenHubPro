@@ -41,7 +41,8 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("KeyColors=" + KeyColorStorage.Serialize());
                 text.AppendLine("BarZones=" + BarZoneStorage.Serialize());
                 text.AppendLine("BarBright=" + AppSettings.BarBrightnessPercent);
-                text.AppendLine("BarLamps=" + BarLampStorage.Serialize());
+                text.AppendLine("BarLamps2=" + BarLampStorage.Serialize());
+                text.AppendLine("BarOn=" + (AppSettings.BarEnabled ? 1 : 0));
                 text.AppendLine("KeyboardLight=" + AppSettings.KeyboardLighting.Serialize());
                 File.WriteAllText(FilePath, text.ToString());
             }
@@ -69,7 +70,8 @@ namespace OmenHub.Core.Settings
                 values.TryGetValue("KeyColors", out keyColorText);
                 KeyColorStorage.Deserialize(keyColorText);
                 string barLampText;
-                if (values.TryGetValue("BarLamps", out barLampText)) BarLampStorage.Deserialize(barLampText); else BarLampStorage.SetDefaults();
+                if (values.TryGetValue("BarLamps2", out barLampText)) BarLampStorage.Deserialize(barLampText); else BarLampStorage.SetDefaults();
+                AppSettings.BarEnabled = ReadNumber(values, "BarOn", 1) == 1;
                 string barZoneText;
                 values.TryGetValue("BarZones", out barZoneText);
                 BarZoneStorage.Deserialize(barZoneText);

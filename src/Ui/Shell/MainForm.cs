@@ -54,6 +54,7 @@ namespace OmenHub.Ui.Shell
             trayIcon.ExitRequested += delegate { ExitApplication(); };
             trayIcon.FansAutoRequested += delegate { ChooseFanMode(FanMode.Auto); };
             trayIcon.FansMaxRequested += delegate { ChooseFanMode(FanMode.Max); };
+            trayIcon.BarToggleRequested += delegate { AppSettings.BarEnabled = !AppSettings.BarEnabled; AppSettings.MarkChanged(); ShowPage(currentPage); };
             omenKeyListener.Pressed += delegate { BeginInvoke(new Action(ToggleWindow)); };
             Resize += delegate { if (WindowState == FormWindowState.Minimized) Hide(); };
             FormClosing += OnFormClosing;

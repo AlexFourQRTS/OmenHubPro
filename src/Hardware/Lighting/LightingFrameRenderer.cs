@@ -33,7 +33,7 @@ namespace OmenHub.Hardware.Lighting
 
         public static byte[][] ScaledBarColors()
         {
-            double factor = AppSettings.BarBrightnessPercent / 100.0;
+            double factor = AppSettings.BarEnabled ? AppSettings.BarBrightnessPercent / 100.0 : 0;
             var colors = new byte[AppSettings.BarZoneCount][];
             for (int zone = 0; zone < colors.Length; zone++)
                 colors[zone] = LightingEffects.Dim(AppSettings.BarZoneColors[zone], factor);

@@ -12,10 +12,17 @@ namespace OmenHub.Ui.Pages
         private readonly BarZoneColumn[] columns = new BarZoneColumn[AppSettings.BarZoneCount];
         private readonly ValueSlider brightnessSlider;
         private readonly Label brightnessLabel;
+        private readonly SegmentedControl enabledSegments;
 
         public BarPage()
         {
             CardPanel card = PageKit.MakeCard(this, 24, 16, 802, 340, "Нижняя панель");
+            enabledSegments = PageKit.MakeSegments(card, 470, 8, 310, new[] { "Включена", "Выключена" }, AppSettings.BarEnabled ? 0 : 1);
+            enabledSegments.SelectionChanged += delegate
+            {
+                AppSettings.BarEnabled = enabledSegments.SelectedIndex == 0;
+                AppSettings.MarkChanged();
+            };
             PageKit.MakeLabel(card, "Четыре зоны слева направо. Цвет запоминается и остаётся даже после закрытия программы.",
                 20, 38, 8.5f, false, PageKit.RoleSub);
             for (int zone = 0; zone < columns.Length; zone++)
@@ -43,6 +50,7 @@ namespace OmenHub.Ui.Pages
         public override void LoadFromSettings()
         {
             foreach (BarZoneColumn column in columns) column.LoadFromSettings();
+            enabledSegments.SelectedIndex = AppSettings.BarEnabled ? 0 : 1;
             brightnessSlider.Value = AppSettings.BarBrightnessPercent;
             brightnessLabel.Text = brightnessSlider.Value + " %";
         }

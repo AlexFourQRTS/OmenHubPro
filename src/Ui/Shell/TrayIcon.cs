@@ -12,6 +12,7 @@ namespace OmenHub.Ui.Shell
         public event EventHandler OpenRequested;
         public event EventHandler FansAutoRequested;
         public event EventHandler FansMaxRequested;
+        public event EventHandler BarToggleRequested;
         public event EventHandler ExitRequested;
 
         public TrayIcon()
@@ -21,6 +22,7 @@ namespace OmenHub.Ui.Shell
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Вентиляторы: авто (BIOS)", null, delegate { Raise(FansAutoRequested); });
             menu.Items.Add("Вентиляторы: максимум", null, delegate { Raise(FansMaxRequested); });
+            menu.Items.Add("Нижняя панель: вкл / выкл", null, delegate { Raise(BarToggleRequested); });
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Выход (кулеры вернутся в авто)", null, delegate { Raise(ExitRequested); });
 

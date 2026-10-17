@@ -73,7 +73,7 @@ namespace OmenHub.Hardware.Lighting
 
         private static void ApplyBiosBarIfChanged()
         {
-            string state = BarZoneStorage.Serialize() + "@" + AppSettings.BarBrightnessPercent;
+            string state = BarZoneStorage.Serialize() + "@" + AppSettings.BarBrightnessPercent + (AppSettings.BarEnabled ? "+on" : "+off");
             if (state == lastBiosBarState) return;
             bool accepted = BiosKeyboardPainter.SetBarZones(LightingFrameRenderer.ScaledBarColors());
             AppLog.Write("lighting: BIOS bar zones " + state + " accepted=" + accepted);

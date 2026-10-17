@@ -21,6 +21,8 @@ namespace OmenHub
         public static int[] RGpu = { 1800, 2200, 3000, 4000, 5500 };
         public static int SrcCpu = 0, SrcGpu = 1; // 0 system, 1 gpu, 2 max of all
         public static int CpuW = 45;
+        public const int ProAutoW = 40;
+        public static bool ProAuto = false;          // "Pro auto" profile: CPU held at ProAutoW
 
         public static string Dir
         {
@@ -65,7 +67,7 @@ namespace OmenHub
                 sb.AppendLine("TCpu=" + J(TCpu)); sb.AppendLine("RCpu=" + J(RCpu));
                 sb.AppendLine("TGpu=" + J(TGpu)); sb.AppendLine("RGpu=" + J(RGpu));
                 sb.AppendLine("SrcCpu=" + SrcCpu); sb.AppendLine("SrcGpu=" + SrcGpu);
-                sb.AppendLine("CpuW=" + CpuW);
+                sb.AppendLine("CpuW=" + CpuW); sb.AppendLine("ProAuto=" + (ProAuto ? 1 : 0));
                 File.WriteAllText(FilePath, sb.ToString());
             }
             catch { }
@@ -95,7 +97,7 @@ namespace OmenHub
                     if (a != null && b != null && a.Length == b.Length) { TGpu = a; RGpu = b; }
                 }
                 SrcCpu = G(d, "SrcCpu", SrcCpu); SrcGpu = G(d, "SrcGpu", SrcGpu);
-                CpuW = G(d, "CpuW", CpuW);
+                CpuW = G(d, "CpuW", CpuW); ProAuto = G(d, "ProAuto", 0) == 1;
             }
             catch { }
         }
@@ -259,6 +261,39 @@ namespace OmenHub
         public bool Alert;
     }
 
+
+    // ---------------------------------------------------------------- RyzenAdj wrapper
+    static class RyzenAdj
+    {
+        public static string Exe { get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"tools\ryzenadj\ryzenadj.exe"); } }
+        public static bool Present { get { return File.Exists(Exe); } }
+
+        public static string Run(string args, out int code)
+        {
+            code = -1;
+            if (!Present) { Log.W("ryzenadj missing: " + Exe); return "Не найден " + Exe; }
+            string r = Proc.RunCode(Exe, args, 20000, out code);
+            Log.W("ryzenadj " + args + "  -> exit=" + code + (r.Length > 400 ? "\r\n" + r.Substring(0, 400) + "..." : "\r\n" + r));
+            return r;
+        }
+        public static string Set(int watts)
+        {
+            int mw = watts * 1000, code;
+            return Run("--stapm-limit=" + mw + " --fast-limit=" + mw + " --slow-limit=" + mw, out code);
+        }
+        // current STAPM limit in watts, NaN if unknown
+        public static double ReadLimit()
+        {
+            int code; string info = Run("-i", out code);
+            foreach (string line in info.Split('\n'))
+                if (line.IndexOf("| STAPM LIMIT", StringComparison.Ordinal) >= 0)
+                {
+                    string[] p = line.Split('|'); double v;
+                    if (p.Length > 2 && double.TryParse(p[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out v)) return v;
+                }
+            return double.NaN;
+        }
+    }
     // ---------------------------------------------------------------- engine
     static class Engine
     {
@@ -294,12 +329,29 @@ namespace OmenHub
             if (biosOk) Bios.SetFanMax(false);
         }
 
+        static DateTime lastPro = DateTime.MinValue; static bool proActive;
+        // "Pro auto": hold the CPU at Cfg.ProAutoW; verifies every 30 s and re-applies if something reset the limit
+        static void ProAutoTick()
+        {
+            if (!Cfg.ProAuto) { proActive = false; return; }
+            if (!RyzenAdj.Present) return;
+            bool fresh = !proActive;
+            if (!fresh && (DateTime.Now - lastPro).TotalSeconds < 30) return;
+            proActive = true; lastPro = DateTime.Now;
+            double cur = fresh ? double.NaN : RyzenAdj.ReadLimit();
+            if (double.IsNaN(cur) || Math.Abs(cur - Cfg.ProAutoW) > 0.5)
+            {
+                RyzenAdj.Set(Cfg.ProAutoW);
+                Log.W("ProAuto: set " + Cfg.ProAutoW + " W (was " + cur + ")");
+            }
+        }
+
         static void Loop()
         {
             while (run)
             {
                 var s = new Snap();
-                try { Poll(s); Control(s); } catch (Exception e) { s.Status = "Ошибка: " + e.Message; }
+                try { Poll(s); Control(s); ProAutoTick(); } catch (Exception e) { s.Status = "Ошибка: " + e.Message; }
                 S = s; tick++;
                 for (int i = 0; i < 15 && run; i++) Thread.Sleep(100);
             }

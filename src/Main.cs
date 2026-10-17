@@ -41,7 +41,7 @@ namespace OmenHub
         // fans
         Seg segMode, segFan, segSrc; Slider slCpu, slGpu; Label lSlCpu, lSlGpu; Curve curve; Label modeInfo;
         // power / cpu
-        Label lGpuFlags, lCpuW; Slider slCpuW; TextBox tbRyzen;
+        Label lGpuFlags, lCpuW; Slider slCpuW; TextBox tbRyzen; Seg segPro;
         Seg segTheme;
 
         public MainForm()
@@ -201,19 +201,29 @@ namespace OmenHub
 
         void BuildPower(Panel pg)
         {
-            var g = MkCard(pg, 24, 16, 802, 130, "GPU");
+            var pr = MkCard(pg, 24, 16, 802, 100, "Профиль мощности");
+            segPro = new Seg { Left = 20, Top = 50, Width = 340, Items = new[] { "Вручную", "Про авто (CPU 40 Вт)" }, Sel = Cfg.ProAuto ? 1 : 0 }; pr.Controls.Add(segPro);
+            Lb(pr, "Про авто: процессор держится на 40 Вт — лучший баланс: ≈6100 очков против ≈6800 на 75 Вт.", 376, 58, 8.5f, false, "sub");
+            segPro.Changed += delegate
+            {
+                Cfg.ProAuto = segPro.Sel == 1;
+                if (Cfg.ProAuto) { Cfg.CpuW = Cfg.ProAutoW; slCpuW.Value = Cfg.ProAutoW; lCpuW.Text = Cfg.ProAutoW + " Вт"; }
+                dirty = true;
+            };
+
+            var g = MkCard(pg, 24, 128, 802, 110, "GPU");
             lGpuFlags = Lb(g, "", 20, 46, 9.5f, false, "sub");
             Lb(g, "Лимит ватт видеокарты задаёт BIOS (режимы Custom TGP / Dynamic Boost). Управление ваттами GPU — следующий этап.", 20, 78, 8.5f, false, "sub");
 
-            var c = MkCard(pg, 24, 162, 802, 388, "CPU: лимит мощности (RyzenAdj)");
+            var c = MkCard(pg, 24, 254, 802, 370, "CPU: лимит мощности (RyzenAdj)");
             Lb(c, "Диапазон 20–75 Вт, шаг 5. Использует tools\\ryzenadj\\ryzenadj.exe (драйвер WinRing0) — запускается только по кнопкам ниже.", 20, 42, 8.5f, false, "sub");
             lCpuW = new Label { Left = 660, Top = 74, Width = 120, Height = 24, Font = Th.F(10.5f, true), Tag = "text", BackColor = Color.Transparent, TextAlign = ContentAlignment.MiddleRight }; c.Controls.Add(lCpuW);
-            slCpuW = new Slider { Left = 20, Top = 74, Width = 630, Min = 20, Max = 75, Step = 5, Value = Cfg.CpuW }; c.Controls.Add(slCpuW);
-            slCpuW.Changed += delegate { Cfg.CpuW = slCpuW.Value; lCpuW.Text = slCpuW.Value + " Вт"; dirty = true; };
+            slCpuW = new Slider { Left = 20, Top = 74, Width = 630, Min = 20, Max = 75, Step = 5, Value = Cfg.ProAuto ? Cfg.ProAutoW : Cfg.CpuW }; c.Controls.Add(slCpuW);
+            slCpuW.Changed += delegate { if (Cfg.ProAuto) { slCpuW.Value = Cfg.ProAutoW; return; } Cfg.CpuW = slCpuW.Value; lCpuW.Text = slCpuW.Value + " Вт"; dirty = true; };
             lCpuW.Text = slCpuW.Value + " Вт";
             var a1 = Button(c, "Применить", 20, 118, 140, true);
             var a2 = Button(c, "Прочитать (ryzenadj -i)", 172, 118, 220, false);
-            tbRyzen = new TextBox { Left = 20, Top = 166, Width = 762, Height = 206, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None };
+            tbRyzen = new TextBox { Left = 20, Top = 166, Width = 762, Height = 188, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None };
             c.Controls.Add(tbRyzen);
             a1.Click += delegate
             {
@@ -297,11 +307,9 @@ namespace OmenHub
         string Short(string s) { s = s.Replace("\r", " ").Replace("\n", " "); return s.Length > 70 ? s.Substring(0, 70) + "…" : s; }
         string Ryzen(string args)
         {
-            string exe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"tools\ryzenadj\ryzenadj.exe");
-            if (!File.Exists(exe)) { Log.W("ryzenadj missing: " + exe); return "Не найден " + exe; }
             int code;
-            var r = Proc.RunCode(exe, args, 20000, out code);
-            Log.W("ryzenadj " + args + "  -> exit=" + code + "\r\n" + r);
+            if (!RyzenAdj.Present) return "Не найден " + RyzenAdj.Exe;
+            var r = RyzenAdj.Run(args, out code);
             if (code != 0) r = "[код выхода " + code + "] " + r;
             return r.Length == 0 ? "(готово, вывода нет)" : r.Replace("\r\n", "\n").Replace("\n", "\r\n");
         }

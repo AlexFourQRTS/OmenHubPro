@@ -1,0 +1,3 @@
+# state snapshot while keyboard=rainbow, bar=off (set in OmenHub)
+20009 02 128 00 00 00 00
+20009 04 4 00 00 00 00

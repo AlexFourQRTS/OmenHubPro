@@ -6,17 +6,12 @@ using OmenHub.Core.Settings;
 namespace OmenHub.Hardware.Lighting
 {
     /// <summary>
-    /// While lighting control is enabled: renders the keyboard (lamps 0-102) about ten times a second and drives the
-    /// light bar either through the BIOS colour table (only when its colour changes) or through HID lamps 103-119.
-    /// Hands the keyboard back to its own effects when disabled or on exit.
+    /// Keeps the lighting alive while the application runs: sends frames to the keyboard's lamps about ten times a second
+    /// and, when the bar colours change, writes them to the BIOS colour table too (the BIOS keeps them after exit).
+    /// Hands the keyboard back to its own effects when the application exits.
     /// </summary>
     public static class LightingEngine
     {
-        public const int KeyboardFirstLamp = 0;
-        public const int KeyboardLastLamp = 102;
-        public const int BarFirstLamp = 103;
-        public const int BarLastLamp = 119;
-
         private const int FrameMilliseconds = 100;
         private const int KeepAliveMilliseconds = 2000;
         private const int RetryMilliseconds = 3000;
@@ -49,25 +44,16 @@ namespace OmenHub.Hardware.Lighting
             long lastSendMilliseconds = 0;
             while (running)
             {
-                if (!AppSettings.LightingControlEnabled)
-                {
-                    keyboard = Release(keyboard);
-                    lastFrame = null;
-                    lastBiosBarState = "";
-                    Thread.Sleep(FrameMilliseconds);
-                    continue;
-                }
                 if (keyboard == null) keyboard = TakeControl();
                 if (keyboard == null) { Thread.Sleep(RetryMilliseconds); continue; }
 
-                ApplyBiosBarIfNeeded();
-                byte[][] frame = RenderFrame(keyboard.LampCount, clock.Elapsed.TotalSeconds);
+                ApplyBiosBarIfChanged();
+                byte[][] frame = LightingFrameRenderer.Render(keyboard.LampCount, clock.Elapsed.TotalSeconds);
                 bool changed = lastFrame == null || !SameFrame(frame, lastFrame);
                 bool keepAliveDue = clock.ElapsedMilliseconds - lastSendMilliseconds > KeepAliveMilliseconds;
                 if (changed || keepAliveDue)
                 {
-                    int lastLamp = AppSettings.BarMode == BarBackend.Lamps ? keyboard.LampCount - 1 : KeyboardLastLamp;
-                    keyboard.PaintLamps(KeyboardFirstLamp, lastLamp, delegate (int lampIndex) { return frame[lampIndex]; });
+                    keyboard.PaintEach(delegate (int lampIndex) { return frame[lampIndex]; });
                     lastFrame = frame;
                     lastSendMilliseconds = clock.ElapsedMilliseconds;
                 }
@@ -81,39 +67,17 @@ namespace OmenHub.Hardware.Lighting
             DirectLampArray keyboard = DirectLampArray.Open();
             if (keyboard == null) { AppLog.Write("lighting: keyboard LampArray did not open"); return null; }
             keyboard.SetAutonomous(false);
-            AppLog.Write("lighting: host control on, lamps=" + keyboard.LampCount + ", bar=" + AppSettings.BarMode);
+            AppLog.Write("lighting: host control on, lamps=" + keyboard.LampCount);
             return keyboard;
         }
 
-        /// <summary>Writes the bar colour to the BIOS only when it (or the mode) changed; the BIOS keeps it afterwards.</summary>
-        private static void ApplyBiosBarIfNeeded()
+        private static void ApplyBiosBarIfChanged()
         {
-            if (AppSettings.BarMode != BarBackend.Bios) { lastBiosBarState = ""; return; }
-            ZoneLighting bar = AppSettings.BarLighting;
-            double factor = bar.Effect == LightingEffect.Off ? 0 : bar.BrightnessPercent / 100.0;
-            byte red = (byte)(bar.Red * factor), green = (byte)(bar.Green * factor), blue = (byte)(bar.Blue * factor);
-            string state = red + "," + green + "," + blue;
+            string state = BarZoneStorage.Serialize() + "@" + AppSettings.BarBrightnessPercent;
             if (state == lastBiosBarState) return;
-            bool accepted = BiosKeyboardPainter.SetBarColor(red, green, blue);
-            AppLog.Write("lighting: BIOS bar colour " + state + " accepted=" + accepted);
+            bool accepted = BiosKeyboardPainter.SetBarZones(LightingFrameRenderer.ScaledBarColors());
+            AppLog.Write("lighting: BIOS bar zones " + state + " accepted=" + accepted);
             lastBiosBarState = state;
-        }
-
-        private static byte[][] RenderFrame(int lampCount, double seconds)
-        {
-            var frame = new byte[lampCount][];
-            for (int lamp = 0; lamp < lampCount; lamp++)
-            {
-                bool isBar = lamp >= BarFirstLamp;
-                ZoneLighting zone = isBar ? AppSettings.BarLighting : AppSettings.KeyboardLighting;
-                int first = isBar ? BarFirstLamp : KeyboardFirstLamp;
-                int size = isBar ? BarLastLamp - BarFirstLamp + 1 : KeyboardLastLamp - KeyboardFirstLamp + 1;
-                frame[lamp] = LightingEffects.ColorAt(zone, lamp - first, size, seconds);
-                byte[] keyColor;
-                if (!isBar && zone.Effect != LightingEffect.Off && AppSettings.KeyColors.TryGetValue(lamp, out keyColor))
-                    frame[lamp] = LightingEffects.Dim(keyColor, zone.BrightnessPercent / 100.0);
-            }
-            return frame;
         }
 
         private static bool SameFrame(byte[][] first, byte[][] second)

@@ -18,6 +18,8 @@ namespace OmenHub.Ui.Controls
         private int hoveredLamp = -1;
 
         public Func<int, Color> ColorOfLamp = delegate (int lampIndex) { return Color.Gray; };
+        public Func<int, bool> IsBarLamp = delegate (int lampIndex) { return false; };
+        public int SelectedLamp = -1;
         public event Action<int, MouseButtons> LampClicked;
 
         public KeyMapView()
@@ -71,6 +73,18 @@ namespace OmenHub.Ui.Controls
             Invalidate();
         }
 
+        private Color OutlineColor(int lamp)
+        {
+            if (lamp == SelectedLamp) return Palette.Accent;
+            if (IsBarLamp(lamp)) return Palette.AccentSecondary;
+            return lamp == hoveredLamp ? Palette.Text : Palette.Border;
+        }
+
+        private float OutlineWidth(int lamp)
+        {
+            return lamp == SelectedLamp ? 3f : IsBarLamp(lamp) ? 2f : lamp == hoveredLamp ? 2f : 1f;
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             UiDrawing.SetHighQuality(e.Graphics);
@@ -81,7 +95,7 @@ namespace OmenHub.Ui.Controls
                 Color fill = ColorOfLamp(lamp);
                 using (var path = UiDrawing.RoundedRectangle(cell, 6))
                 using (var brush = new SolidBrush(fill))
-                using (var border = new Pen(lamp == hoveredLamp ? Palette.AccentSecondary : Palette.Border, lamp == hoveredLamp ? 2.5f : 1f))
+                using (var border = new Pen(OutlineColor(lamp), OutlineWidth(lamp)))
                 {
                     e.Graphics.FillPath(brush, path);
                     e.Graphics.DrawPath(border, path);

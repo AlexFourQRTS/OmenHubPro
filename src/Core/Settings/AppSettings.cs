@@ -27,13 +27,26 @@ namespace OmenHub.Core.Settings
         public static int CpuWatts = 45;
         public static bool ProAutoEnabled = true;
         public static bool BatteryEcoEnabled = true;
-        public static bool LightingControlEnabled = false;   // false = the keyboard runs its own effects
-        public static BarBackend BarMode = BarBackend.Bios;
 
         /// <summary>Per-key colour overrides on top of the keyboard zone colour: lamp index to {red, green, blue}.</summary>
         public static readonly ConcurrentDictionary<int, byte[]> KeyColors = new ConcurrentDictionary<int, byte[]>();
+
+        /// <summary>Lamps that physically belong to the bottom light bar (see BarLampStorage).</summary>
+        public static readonly ConcurrentDictionary<int, bool> BarLamps = new ConcurrentDictionary<int, bool>();
+
+        /// <summary>Lamp that blinks white so the user can see which LED it is (-1 = none).</summary>
+        public static volatile int IdentifiedLamp = -1;
         public static ZoneLighting KeyboardLighting = ZoneLighting.Create(255, 138, 31, LightingEffect.Static);
-        public static ZoneLighting BarLighting = ZoneLighting.Create(155, 107, 255, LightingEffect.Static);
+
+        public const int BarZoneCount = 4;
+
+        /// <summary>The four zones of the bottom light bar, left to right: {red, green, blue} each.</summary>
+        public static byte[][] BarZoneColors =
+        {
+            new byte[] { 155, 107, 255 }, new byte[] { 155, 107, 255 }, new byte[] { 255, 138, 31 }, new byte[] { 255, 138, 31 }
+        };
+
+        public static int BarBrightnessPercent = 100;
 
         private static volatile bool hasUnsavedChanges;
 

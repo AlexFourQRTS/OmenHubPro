@@ -29,8 +29,8 @@ namespace OmenHub
     class MainForm : Form
     {
         Panel side, head; Label title, brand, status;
-        Panel[] pages = new Panel[6]; Nav[] navs = new Nav[6];
-        string[] names = { "Обзор", "Вентиляторы", "Мощность", "Процессор", "Подсветка", "Настройки" };
+        Panel[] pages = new Panel[5]; Nav[] navs = new Nav[5];
+        string[] names = { "Обзор", "Вентиляторы", "Мощность", "Подсветка", "Настройки" };
         System.Windows.Forms.Timer tm = new System.Windows.Forms.Timer();
         bool dirty;
 
@@ -40,8 +40,7 @@ namespace OmenHub
         // fans
         Seg segMode, segFan, segSrc; Slider slCpu, slGpu; Label lSlCpu, lSlGpu; Curve curve; Label modeInfo;
         // power / cpu
-        Label lGpuFlags, lGpuClock, lCpuW, lGpuRes; Slider slGpuClk, slCpuW; TextBox tbRyzen;
-        Slider slFreq; Label lFreq; Seg segBoost; Label lCpuRes;
+        Label lGpuFlags, lCpuW; Slider slCpuW; TextBox tbRyzen;
         Seg segTheme;
 
         public MainForm()
@@ -57,7 +56,7 @@ namespace OmenHub
             title = Lb(head, "", 28, 16, 17, true, "text");
             status = Lb(head, "", 28, 44, 8.5f, false, "sub");
             // remove status from header height: keep tiny
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < names.Length; i++)
             {
                 int k = i;
                 var n = new Nav { Text = names[i], Left = 0, Top = 100 + i * 46, Width = 210 };
@@ -69,7 +68,7 @@ namespace OmenHub
             // Controls added after docked ones need z-order fix
             side.BringToFront(); head.BringToFront(); side.SendToBack(); head.SendToBack();
 
-            BuildOverview(pages[0]); BuildFans(pages[1]); BuildPower(pages[2]); BuildCpu(pages[3]); BuildLight(pages[4]); BuildSettings(pages[5]);
+            BuildOverview(pages[0]); BuildFans(pages[1]); BuildPower(pages[2]); BuildLight(pages[3]); BuildSettings(pages[4]);
             ApplyTheme(); Show(0);
 
             tm.Interval = 1000; tm.Tick += delegate { Tick(); }; tm.Start();
@@ -193,20 +192,11 @@ namespace OmenHub
 
         void BuildPower(Panel pg)
         {
-            var g = MkCard(pg, 24, 16, 802, 200, "GPU");
+            var g = MkCard(pg, 24, 16, 802, 130, "GPU");
             lGpuFlags = Lb(g, "", 20, 46, 9.5f, false, "sub");
-            Lb(g, "Лимит ватт видеокарты задаёт BIOS. Здесь — потолок частоты ядра (косвенно режет потребление).", 20, 70, 8.5f, false, "sub");
-            lGpuClock = new Label { Left = 660, Top = 100, Width = 120, Height = 24, Font = Th.F(10.5f, true), Tag = "text", BackColor = Color.Transparent, TextAlign = ContentAlignment.MiddleRight }; g.Controls.Add(lGpuClock);
-            slGpuClk = new Slider { Left = 20, Top = 100, Width = 630, Min = 600, Max = 3000, Step = 50, Value = Cfg.GpuClock }; g.Controls.Add(slGpuClk);
-            slGpuClk.Changed += delegate { Cfg.GpuClock = slGpuClk.Value; lGpuClock.Text = slGpuClk.Value + " МГц"; dirty = true; };
-            lGpuClock.Text = slGpuClk.Value + " МГц";
-            var ap = Button(g, "Применить потолок", 20, 144, 180, true);
-            var rs = Button(g, "Сбросить", 212, 144, 120, false);
-            lGpuRes = Lb(g, "", 350, 152, 9, false, "sub");
-            ap.Click += delegate { lGpuRes.Text = Short(Proc.Run("nvidia-smi", "-lgc 210," + slGpuClk.Value, 8000)); };
-            rs.Click += delegate { lGpuRes.Text = Short(Proc.Run("nvidia-smi", "-rgc", 8000)); };
+            Lb(g, "Лимит ватт видеокарты задаёт BIOS (режимы Custom TGP / Dynamic Boost). Управление ваттами GPU — следующий этап.", 20, 78, 8.5f, false, "sub");
 
-            var c = MkCard(pg, 24, 232, 802, 388, "CPU: лимит мощности (RyzenAdj)");
+            var c = MkCard(pg, 24, 162, 802, 388, "CPU: лимит мощности (RyzenAdj)");
             Lb(c, "Диапазон 20–75 Вт, шаг 5. Использует tools\\ryzenadj\\ryzenadj.exe (драйвер WinRing0) — запускается только по кнопкам ниже.", 20, 42, 8.5f, false, "sub");
             lCpuW = new Label { Left = 660, Top = 74, Width = 120, Height = 24, Font = Th.F(10.5f, true), Tag = "text", BackColor = Color.Transparent, TextAlign = ContentAlignment.MiddleRight }; c.Controls.Add(lCpuW);
             slCpuW = new Slider { Left = 20, Top = 74, Width = 630, Min = 20, Max = 75, Step = 5, Value = Cfg.CpuW }; c.Controls.Add(slCpuW);
@@ -230,36 +220,6 @@ namespace OmenHub
             if (!File.Exists(exe)) return "Не найден " + exe;
             var r = Proc.Run(exe, args, 20000);
             return r.Length == 0 ? "(готово, вывода нет)" : r.Replace("\n", "\r\n");
-        }
-
-        void BuildCpu(Panel pg)
-        {
-            var c = MkCard(pg, 24, 16, 802, 250, "Частота процессора");
-            Lb(c, "Максимальная частота через схему питания Windows (PROCFREQMAX). Действует на активную схему.", 20, 42, 8.5f, false, "sub");
-            lFreq = new Label { Left = 660, Top = 76, Width = 120, Height = 24, Font = Th.F(10.5f, true), Tag = "text", BackColor = Color.Transparent, TextAlign = ContentAlignment.MiddleRight }; c.Controls.Add(lFreq);
-            slFreq = new Slider { Left = 20, Top = 76, Width = 630, Min = 1000, Max = 5100, Step = 100, Value = Cfg.CpuFreq }; c.Controls.Add(slFreq);
-            slFreq.Changed += delegate { Cfg.CpuFreq = slFreq.Value; lFreq.Text = slFreq.Value + " МГц"; dirty = true; };
-            lFreq.Text = slFreq.Value + " МГц";
-            Lb(c, "Turbo Boost", 20, 124, 9.5f, false, "sub");
-            segBoost = new Seg { Left = 120, Top = 118, Width = 200, Items = new[] { "Вкл", "Выкл" }, Sel = Cfg.Boost == 0 ? 1 : 0 }; c.Controls.Add(segBoost);
-            segBoost.Changed += delegate { Cfg.Boost = segBoost.Sel == 0 ? 1 : 0; dirty = true; };
-            var ap = Button(c, "Применить", 20, 180, 140, true);
-            var rs = Button(c, "Снять лимит", 172, 180, 150, false);
-            lCpuRes = Lb(c, "", 340, 188, 9, false, "sub");
-            ap.Click += delegate { lCpuRes.Text = ApplyFreq(slFreq.Value, segBoost.Sel == 0); };
-            rs.Click += delegate { lCpuRes.Text = ApplyFreq(0, segBoost.Sel == 0); };
-        }
-        string ApplyFreq(int mhz, bool boost)
-        {
-            string[] cmds = {
-                "/setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCFREQMAX " + mhz,
-                "/setdcvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCFREQMAX " + mhz,
-                "/setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE " + (boost ? 2 : 0),
-                "/setdcvalueindex SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE " + (boost ? 2 : 0),
-                "/setactive SCHEME_CURRENT" };
-            string err = "";
-            foreach (string a in cmds) { string o = Proc.Run("powercfg", a, 8000); if (o.Length > 0) err = o; }
-            return err.Length == 0 ? "Применено: " + (mhz == 0 ? "без лимита" : mhz + " МГц") : Short(err);
         }
 
         void BuildLight(Panel pg)

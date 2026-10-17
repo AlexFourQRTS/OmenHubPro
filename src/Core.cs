@@ -20,7 +20,7 @@ namespace OmenHub
         public static int[] TGpu = { 40, 50, 60, 70, 80, 90 };
         public static int[] RGpu = { 0, 1800, 2400, 3200, 4000, 4400 };
         public static int SrcCpu = 0, SrcGpu = 1; // 0 system, 1 gpu, 2 max of all
-        public static int CpuFreq = 3000, Boost = 1, GpuClock = 2000, CpuW = 45;
+        public static int CpuW = 45;
 
         public static string Dir
         {
@@ -55,8 +55,7 @@ namespace OmenHub
                 sb.AppendLine("TCpu=" + J(TCpu)); sb.AppendLine("RCpu=" + J(RCpu));
                 sb.AppendLine("TGpu=" + J(TGpu)); sb.AppendLine("RGpu=" + J(RGpu));
                 sb.AppendLine("SrcCpu=" + SrcCpu); sb.AppendLine("SrcGpu=" + SrcGpu);
-                sb.AppendLine("CpuFreq=" + CpuFreq); sb.AppendLine("Boost=" + Boost);
-                sb.AppendLine("GpuClock=" + GpuClock); sb.AppendLine("CpuW=" + CpuW);
+                sb.AppendLine("CpuW=" + CpuW);
                 File.WriteAllText(FilePath, sb.ToString());
             }
             catch { }
@@ -82,8 +81,7 @@ namespace OmenHub
                 if (d.TryGetValue("TGpu", out v)) P(v, TGpu);
                 if (d.TryGetValue("RGpu", out v)) P(v, RGpu);
                 SrcCpu = G(d, "SrcCpu", SrcCpu); SrcGpu = G(d, "SrcGpu", SrcGpu);
-                CpuFreq = G(d, "CpuFreq", CpuFreq); Boost = G(d, "Boost", Boost);
-                GpuClock = G(d, "GpuClock", GpuClock); CpuW = G(d, "CpuW", CpuW);
+                CpuW = G(d, "CpuW", CpuW);
             }
             catch { }
         }

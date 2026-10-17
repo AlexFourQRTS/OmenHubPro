@@ -10,6 +10,7 @@ namespace OmenHub.Ui.Pages
         {
             Controls.Add(keyboardCard);
             Controls.Add(barCard);
+            keyboardCard.PresetApplied += delegate { barCard.LoadFromSettings(); };
         }
 
         public override void LoadFromSettings()

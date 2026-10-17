@@ -24,6 +24,9 @@ namespace OmenHub.Ui.Pages
         private readonly Label speedLabel;
         private readonly ChoiceGrid presetGrid;
 
+        /// <summary>Raised after a preset changed the settings, so the page can refresh the bar card too.</summary>
+        public event System.EventHandler PresetApplied;
+
         private static ZoneLighting Lighting { get { return AppSettings.KeyboardLighting; } }
 
         public KeyboardLightingCard()
@@ -45,7 +48,7 @@ namespace OmenHub.Ui.Pages
             speedSlider = PageKit.MakeSlider(this, 560, 198, 160, 1, ZoneLighting.MaximumSpeed, 1, 5);
             speedLabel = PageKit.MakeValueLabel(this, 722, 196, 60, 9.5f, ContentAlignment.MiddleRight);
 
-            PageKit.MakeLabel(this, "Пресеты", 20, 236, 9, false, PageKit.RoleSub);
+            PageKit.MakeLabel(this, "Пресеты (клавиатура + панель)", 20, 236, 9, false, PageKit.RoleSub);
             presetGrid = new ChoiceGrid { Left = 20, Top = 256, Width = 762, Columns = 6 };
             Controls.Add(presetGrid);
             ActionButton saveButton = PageKit.MakeButton(this, "Сохранить пресет", 20, 306, 200, true);
@@ -108,19 +111,18 @@ namespace OmenHub.Ui.Pages
         private void ApplyPreset()
         {
             if (presetGrid.SelectedIndex < 0) return;
-            ZoneLighting preset = LightingPresetStore.Load(presetGrid.Items[presetGrid.SelectedIndex]);
-            if (preset == null) return;
-            AppSettings.KeyboardLighting = preset;
+            if (!LightingPresetStore.Apply(presetGrid.Items[presetGrid.SelectedIndex])) return;
             LoadFromSettings();
             presetGrid.SelectedIndex = -1;
             Changed();
+            if (PresetApplied != null) PresetApplied(this, System.EventArgs.Empty);
         }
 
         private void SavePreset()
         {
             string name = TextPromptDialog.Ask("Сохранить пресет", "Название пресета:");
             if (string.IsNullOrEmpty(name)) return;
-            LightingPresetStore.Save(name, Lighting);
+            LightingPresetStore.SaveCurrent(name);
             RefreshPresetList(name);
         }
 

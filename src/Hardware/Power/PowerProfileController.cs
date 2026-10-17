@@ -41,7 +41,7 @@ namespace OmenHub.Hardware.Power
 
         private static int ChooseTarget(bool onBattery)
         {
-            if (onBattery && AppSettings.BatteryEcoEnabled) return AppSettings.BatteryWatts;
+            if (onBattery) return AppSettings.BatteryWatts;
             if (AppSettings.ProAutoEnabled) return AppSettings.ProAutoWatts;
             return AppSettings.CpuLimitEnabled ? AppSettings.CpuWatts : AppSettings.MaximumCpuWatts;
         }

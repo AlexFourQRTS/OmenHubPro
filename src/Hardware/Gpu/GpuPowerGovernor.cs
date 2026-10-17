@@ -80,7 +80,7 @@ namespace OmenHub.Hardware.Gpu
             bool onBattery;
             try { onBattery = System.Windows.Forms.SystemInformation.PowerStatus.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Offline; }
             catch { onBattery = false; }
-            if (onBattery && AppSettings.BatteryEcoEnabled) return AppSettings.BatteryGpuWatts;
+            if (onBattery) return AppSettings.BatteryGpuWatts;
             if (AppSettings.ProAutoEnabled) return AppSettings.ProAutoGpuWatts;
             return AppSettings.GpuLimitEnabled ? AppSettings.GpuWatts : 0;
         }

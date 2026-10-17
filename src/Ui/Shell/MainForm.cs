@@ -143,7 +143,7 @@ namespace OmenHub.Ui.Shell
             SettingsStorage.Save();
             AppLog.Write("CONFIG mode=" + AppSettings.Mode + " manual=" + AppSettings.ManualCpuFanRpm + "/" + AppSettings.ManualGpuFanRpm
                 + " cpuCurve=" + AppSettings.CpuCurve.Serialize() + " gpuCurve=" + AppSettings.GpuCurve.Serialize()
-                + " cpuW=" + AppSettings.CpuWatts + " proAuto=" + AppSettings.ProAutoEnabled + " batteryEco=" + AppSettings.BatteryEcoEnabled);
+                + " cpuW=" + AppSettings.CpuWatts + " proAuto=" + AppSettings.ProAutoEnabled);
         }
     }
 }

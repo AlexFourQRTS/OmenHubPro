@@ -32,7 +32,6 @@ namespace OmenHub.Core.Settings
         public static int CpuWatts = 45;
         public static volatile bool CpuLimitEnabled = false;   // false = no limit (the maximum of the range is applied)
         public static bool ProAutoEnabled = true;
-        public static bool BatteryEcoEnabled = true;
         public static volatile bool LabEnabled = false;   // shows the lighting laboratory page in the menu
 
         public const int MinimumGpuWatts = 30;

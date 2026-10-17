@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using OmenHub.Core.Settings;
 using OmenHub.Engine;
+using OmenHub.Hardware.Sensors;
 
 namespace OmenHub.Ui.Overlay
 {
@@ -31,7 +32,9 @@ namespace OmenHub.Ui.Overlay
 
         private void Refresh()
         {
-            if (!ShouldShow()) { if (window.Visible) window.Hide(); return; }
+            bool show = ShouldShow();
+            CpuPackageSensor.Wanted = show && AppSettings.OverlayShowCpu && AppSettings.OverlayShowPower;
+            if (!show) { if (window.Visible) window.Hide(); return; }
             Size size = OverlayPainter.MeasureSize(Scale);
             if (!window.Visible) window.Show();
             using (var bitmap = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb))

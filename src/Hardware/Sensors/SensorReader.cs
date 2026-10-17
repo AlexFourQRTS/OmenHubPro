@@ -15,6 +15,7 @@ namespace OmenHub.Hardware.Sensors
         public SensorReader(bool biosAvailable)
         {
             this.biosAvailable = biosAvailable;
+            CpuPackageSensor.Start();
         }
 
         public SensorSnapshot Read()
@@ -36,6 +37,8 @@ namespace OmenHub.Hardware.Sensors
             snapshot.OnBattery = IsRunningOnBattery();
             double hottestZone = acpiReader.ReadHottestZone();
             snapshot.SystemTemperature = (int)Math.Round(Math.Max(snapshot.BiosTemperature, hottestZone));
+            snapshot.CpuTemperature = hottestZone < 0 ? -1 : (int)Math.Round(hottestZone);   // the hottest ACPI zone follows the CPU (about 40 C idle)
+            snapshot.CpuPowerWatts = double.IsNaN(CpuPackageSensor.FastWatts) ? -1 : CpuPackageSensor.FastWatts;
             cpuReader.ReadInto(snapshot);
             gpuReader.ReadInto(snapshot);
             RamReader.ReadInto(snapshot);

@@ -19,7 +19,7 @@ namespace OmenHub.Hardware.Power
 
         public static bool IsPresent { get { return File.Exists(ExecutablePath); } }
 
-        public static string Run(string arguments, out int exitCode)
+        public static string Run(string arguments, out int exitCode, bool writeLog = true)
         {
             exitCode = -1;
             if (!IsPresent)

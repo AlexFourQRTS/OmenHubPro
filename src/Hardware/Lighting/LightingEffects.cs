@@ -3,48 +3,53 @@ using OmenHub.Core.Settings;
 
 namespace OmenHub.Hardware.Lighting
 {
-    /// <summary>Computes the colour of one lamp for a zone's effect at a given moment.</summary>
+    /// <summary>
+    /// Colour of one keyboard lamp for the chosen effect. x01 / y01 are the lamp's position on the keyboard,
+    /// 0..1 from left to right and from top to bottom; seconds is the animation clock.
+    /// </summary>
     public static class LightingEffects
     {
-        private const double RainbowDegreesPerSecond = 60;
-        private const double BreathingPeriodSeconds = 3;
+        private const double RainbowDegreesPerSecond = 40;
 
-        /// <summary>Returns {red, green, blue}. lampPosition is the lamp's index inside its zone (0..zoneSize-1).</summary>
-        public static byte[] ColorAt(ZoneLighting zone, int lampPosition, int zoneSize, double seconds)
+        public static byte[] ColorAt(ZoneLighting zone, int lamp, double x01, double y01, double seconds)
         {
-            double brightness = zone.BrightnessPercent / 100.0;
+            double time = seconds * (0.25 + zone.Speed * 0.25);   // speed 1..10 stretches the clock
+            double level = 1;
+            byte[] color = zone.Primary;
             switch (zone.Effect)
             {
-                case LightingEffect.Off:
-                    return new byte[] { 0, 0, 0 };
-                case LightingEffect.Rainbow:
-                    double hue = (360.0 * lampPosition / Math.Max(1, zoneSize) + seconds * RainbowDegreesPerSecond) % 360;
-                    return FromHue(hue, brightness);
-                case LightingEffect.Breathing:
-                    double wave = 0.5 + 0.5 * Math.Sin(2 * Math.PI * seconds / BreathingPeriodSeconds);
-                    return Scale(zone.Red, zone.Green, zone.Blue, brightness * wave);
-                default:
-                    return Scale(zone.Red, zone.Green, zone.Blue, brightness);
+                case LightingEffect.Off: return new byte[] { 0, 0, 0 };
+                case LightingEffect.Gradient: color = Mix(zone.Primary, zone.Secondary, x01); break;
+                case LightingEffect.Breathing: level = 0.5 + 0.5 * Math.Sin(2 * Math.PI * time / 3); break;
+                case LightingEffect.Rainbow: return FromHue(x01 * 360 + time * RainbowDegreesPerSecond, Brightness(zone));
+                case LightingEffect.RainbowCycle: return FromHue(time * RainbowDegreesPerSecond, Brightness(zone));
+                case LightingEffect.ColorWave:
+                    color = Mix(zone.Primary, zone.Secondary, 0.5 + 0.5 * Math.Sin(2 * Math.PI * (x01 - time * 0.2)));
+                    break;
+                case LightingEffect.Pulse: color = (int)(time * 2) % 2 == 0 ? zone.Primary : zone.Secondary; break;
+                case LightingEffect.Twinkle:
+                    color = Mix(zone.Secondary, zone.Primary, Math.Pow(Math.Max(0, Math.Sin(time * 2 + Hash(lamp) * 6.2832)), 6));
+                    break;
+                case LightingEffect.Scanner:
+                    double position = 0.5 + 0.5 * Math.Sin(time * 1.6);
+                    color = Mix(zone.Secondary, zone.Primary, Math.Max(0, 1 - Math.Abs(x01 - position) * 5));
+                    break;
+                case LightingEffect.Fire: color = FireColor(y01, lamp, time); break;
             }
+            return Scale(color, level * Brightness(zone));
         }
 
         /// <summary>Scales an {red, green, blue} colour by a brightness factor (0..1).</summary>
         public static byte[] Dim(byte[] color, double factor)
         {
-            return Scale(color[0], color[1], color[2], factor);
-        }
-
-        private static byte[] Scale(int red, int green, int blue, double factor)
-        {
-            return new[] { (byte)(red * factor), (byte)(green * factor), (byte)(blue * factor) };
+            return Scale(color, factor);
         }
 
         public static byte[] FromHue(double hueDegrees, double brightness)
         {
-            double sector = hueDegrees / 60.0;
-            int sectorIndex = (int)sector % 6;
-            double rising = sector - Math.Floor(sector);
-            double falling = 1 - rising;
+            double sector = (hueDegrees % 360 + 360) % 360 / 60.0;
+            int sectorIndex = (int)sector;
+            double rising = sector - sectorIndex, falling = 1 - rising;
             double red = 0, green = 0, blue = 0;
             switch (sectorIndex)
             {
@@ -55,7 +60,40 @@ namespace OmenHub.Hardware.Lighting
                 case 4: red = rising; blue = 1; break;
                 default: red = 1; blue = falling; break;
             }
-            return Scale((int)(red * 255), (int)(green * 255), (int)(blue * 255), brightness);
+            return Scale(new[] { (byte)(red * 255), (byte)(green * 255), (byte)(blue * 255) }, brightness);
+        }
+
+        private static byte[] FireColor(double y01, int lamp, double time)
+        {
+            double heat = Math.Max(0, Math.Min(1, y01 * 0.9 + 0.35 * Math.Sin(time * 5 + Hash(lamp) * 12) * Math.Sin(time * 2.3 + lamp)));
+            return new[] { (byte)255, (byte)(60 + 195 * heat * heat), (byte)(heat > 0.8 ? 120 * (heat - 0.8) * 5 : 0) };
+        }
+
+        private static double Brightness(ZoneLighting zone)
+        {
+            return zone.BrightnessPercent / 100.0;
+        }
+
+        private static double Hash(int lamp)
+        {
+            double value = Math.Sin(lamp * 12.9898) * 43758.5453;
+            return value - Math.Floor(value);
+        }
+
+        private static byte[] Mix(byte[] first, byte[] second, double fraction)
+        {
+            fraction = Math.Max(0, Math.Min(1, fraction));
+            return new[]
+            {
+                (byte)(first[0] + (second[0] - first[0]) * fraction),
+                (byte)(first[1] + (second[1] - first[1]) * fraction),
+                (byte)(first[2] + (second[2] - first[2]) * fraction)
+            };
+        }
+
+        private static byte[] Scale(byte[] color, double factor)
+        {
+            return new[] { (byte)(color[0] * factor), (byte)(color[1] * factor), (byte)(color[2] * factor) };
         }
     }
 }

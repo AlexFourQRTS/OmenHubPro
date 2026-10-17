@@ -1,36 +1,48 @@
 using System;
-using System.Collections.Generic;
 using OmenHub.Core.Settings;
 
 namespace OmenHub.Hardware.Lighting
 {
     /// <summary>
-    /// Builds one frame (an {red, green, blue} colour per lamp). Key lamps follow the keyboard zone and the per-key overrides;
-    /// bar lamps follow the four bar zones, left to right by their physical position.
+    /// Builds one frame (an {red, green, blue} colour per lamp). The lamps 0-102 get the animated effect. The lamps
+    /// 103-119 are shared between the bottom keyboard row and the light bar, so they only get the effect's base colour
+    /// (and the engine rewrites the BIOS bar colours right after writing them).
     /// </summary>
     public static class LightingFrameRenderer
     {
-        private const double IdentifyBlinkHertz = 2;
+        public const int AnimatedLastLamp = 102;
 
         public static byte[][] Render(int lampCount, double seconds)
         {
-            var frame = new byte[lampCount][];
-            ZoneLighting keyboardZone = AppSettings.KeyboardLighting;
-            byte[][] barColors = ScaledBarColors();
-            Dictionary<int, int> barZoneOfLamp = AssignBarZones();
+            float[] xMillimetres, yMillimetres;
+            LampLayout.Get(out xMillimetres, out yMillimetres);
+            float maximumX = 1, maximumY = 1;
+            for (int lamp = 0; lamp < xMillimetres.Length; lamp++)
+            {
+                maximumX = Math.Max(maximumX, xMillimetres[lamp]);
+                maximumY = Math.Max(maximumY, yMillimetres[lamp]);
+            }
 
+            ZoneLighting zone = AppSettings.KeyboardLighting;
+            var frame = new byte[lampCount][];
             for (int lamp = 0; lamp < lampCount; lamp++)
             {
-                int barZone;
-                if (barZoneOfLamp.TryGetValue(lamp, out barZone)) frame[lamp] = barColors[barZone];
-                else frame[lamp] = KeyColor(keyboardZone, lamp, lampCount, seconds);
+                double x01 = lamp < xMillimetres.Length ? xMillimetres[lamp] / maximumX : 0;
+                double y01 = lamp < yMillimetres.Length ? yMillimetres[lamp] / maximumY : 0;
+                frame[lamp] = lamp <= AnimatedLastLamp
+                    ? LightingEffects.ColorAt(zone, lamp, x01, y01, seconds)
+                    : BaseColor(zone);
             }
-            int identified = AppSettings.IdentifiedLamp;
-            if (identified >= 0 && identified < lampCount)
-                frame[identified] = (int)(seconds * IdentifyBlinkHertz * 2) % 2 == 0 ? new byte[] { 255, 255, 255 } : new byte[] { 0, 0, 0 };
             return frame;
         }
 
+        private static byte[] BaseColor(ZoneLighting zone)
+        {
+            if (zone.Effect == LightingEffect.Off) return new byte[] { 0, 0, 0 };
+            return LightingEffects.Dim(zone.Primary, zone.BrightnessPercent / 100.0);
+        }
+
+        /// <summary>Bar zone colours scaled by the bar brightness; all black while the bar is switched off.</summary>
         public static byte[][] ScaledBarColors()
         {
             double factor = AppSettings.BarEnabled ? AppSettings.BarBrightnessPercent / 100.0 : 0;
@@ -38,32 +50,6 @@ namespace OmenHub.Hardware.Lighting
             for (int zone = 0; zone < colors.Length; zone++)
                 colors[zone] = LightingEffects.Dim(AppSettings.BarZoneColors[zone], factor);
             return colors;
-        }
-
-        private static byte[] KeyColor(ZoneLighting keyboardZone, int lamp, int lampCount, double seconds)
-        {
-            byte[] overrideColor;
-            if (keyboardZone.Effect != LightingEffect.Off && AppSettings.KeyColors.TryGetValue(lamp, out overrideColor))
-                return LightingEffects.Dim(overrideColor, keyboardZone.BrightnessPercent / 100.0);
-            return LightingEffects.ColorAt(keyboardZone, lamp, lampCount, seconds);
-        }
-
-        /// <summary>Splits the bar lamps into four equal groups by horizontal position; returns lamp index to zone index.</summary>
-        private static Dictionary<int, int> AssignBarZones()
-        {
-            float[] xMillimetres, yMillimetres;
-            LampLayout.Get(out xMillimetres, out yMillimetres);
-            var barLamps = new List<int>(AppSettings.BarLamps.Keys);
-            barLamps.Sort(delegate (int first, int second)
-            {
-                float firstX = first < xMillimetres.Length ? xMillimetres[first] : first;
-                float secondX = second < xMillimetres.Length ? xMillimetres[second] : second;
-                return firstX.CompareTo(secondX);
-            });
-            var zoneOfLamp = new Dictionary<int, int>();
-            for (int rank = 0; rank < barLamps.Count; rank++)
-                zoneOfLamp[barLamps[rank]] = rank * AppSettings.BarZoneCount / Math.Max(1, barLamps.Count);
-            return zoneOfLamp;
         }
     }
 }

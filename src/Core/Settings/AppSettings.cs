@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 
 namespace OmenHub.Core.Settings
 {
@@ -28,15 +27,7 @@ namespace OmenHub.Core.Settings
         public static bool ProAutoEnabled = true;
         public static bool BatteryEcoEnabled = true;
 
-        /// <summary>Per-key colour overrides on top of the keyboard zone colour: lamp index to {red, green, blue}.</summary>
-        public static readonly ConcurrentDictionary<int, byte[]> KeyColors = new ConcurrentDictionary<int, byte[]>();
-
-        /// <summary>Lamps that physically belong to the bottom light bar (see BarLampStorage).</summary>
-        public static readonly ConcurrentDictionary<int, bool> BarLamps = new ConcurrentDictionary<int, bool>();
-
-        /// <summary>Lamp that blinks white so the user can see which LED it is (-1 = none).</summary>
-        public static volatile int IdentifiedLamp = -1;
-        public static ZoneLighting KeyboardLighting = ZoneLighting.Create(255, 138, 31, LightingEffect.Static);
+        public static ZoneLighting KeyboardLighting = new ZoneLighting();   // plain white by default
 
         public const int BarZoneCount = 4;
 

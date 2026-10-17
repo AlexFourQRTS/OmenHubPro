@@ -12,10 +12,10 @@ namespace OmenHub.Ui.Pages
         public BarZoneColumn(System.Windows.Forms.Control parent, int zoneIndex, int left)
         {
             this.zoneIndex = zoneIndex;
-            PageKit.MakeLabel(parent, "Зона " + (zoneIndex + 1), left, 62, 9.5f, true, PageKit.RoleText);
-            colorPad = new ColorPad { Left = left, Top = 88, Width = 184, Height = 120 };
+            PageKit.MakeLabel(parent, "Зона " + (zoneIndex + 1), left, 52, 9.5f, true, PageKit.RoleText);
+            colorPad = new ColorPad { Left = left, Top = 76, Width = 184, Height = 70 };
             parent.Controls.Add(colorPad);
-            ActionButton offButton = PageKit.MakeButton(parent, "Выключить зону", left, 216, 184, false);
+            ActionButton offButton = PageKit.MakeButton(parent, "Выключить зону", left, 152, 184, false);
             colorPad.ColorChanged += delegate { Store(colorPad.SelectedRgb[0], colorPad.SelectedRgb[1], colorPad.SelectedRgb[2]); };
             offButton.Click += delegate { Store(0, 0, 0); LoadFromSettings(); };
         }

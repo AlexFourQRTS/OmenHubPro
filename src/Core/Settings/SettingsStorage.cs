@@ -38,10 +38,8 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("CpuW=" + AppSettings.CpuWatts);
                 text.AppendLine("ProAuto=" + (AppSettings.ProAutoEnabled ? 1 : 0));
                 text.AppendLine("BatteryEco=" + (AppSettings.BatteryEcoEnabled ? 1 : 0));
-                text.AppendLine("KeyColors=" + KeyColorStorage.Serialize());
                 text.AppendLine("BarZones=" + BarZoneStorage.Serialize());
                 text.AppendLine("BarBright=" + AppSettings.BarBrightnessPercent);
-                text.AppendLine("BarLamps2=" + BarLampStorage.Serialize());
                 text.AppendLine("BarOn=" + (AppSettings.BarEnabled ? 1 : 0));
                 text.AppendLine("KeyboardLight=" + AppSettings.KeyboardLighting.Serialize());
                 File.WriteAllText(FilePath, text.ToString());
@@ -51,7 +49,6 @@ namespace OmenHub.Core.Settings
 
         public static void Load()
         {
-            BarLampStorage.SetDefaults();   // used when no settings file exists yet
             try
             {
                 if (!File.Exists(FilePath)) return;
@@ -66,11 +63,6 @@ namespace OmenHub.Core.Settings
                 AppSettings.CpuWatts = ReadNumber(values, "CpuW", AppSettings.CpuWatts);
                 AppSettings.ProAutoEnabled = ReadNumber(values, "ProAuto", 1) == 1;
                 AppSettings.BatteryEcoEnabled = ReadNumber(values, "BatteryEco", 1) == 1;
-                string keyColorText;
-                values.TryGetValue("KeyColors", out keyColorText);
-                KeyColorStorage.Deserialize(keyColorText);
-                string barLampText;
-                if (values.TryGetValue("BarLamps2", out barLampText)) BarLampStorage.Deserialize(barLampText); else BarLampStorage.SetDefaults();
                 AppSettings.BarEnabled = ReadNumber(values, "BarOn", 1) == 1;
                 string barZoneText;
                 values.TryGetValue("BarZones", out barZoneText);

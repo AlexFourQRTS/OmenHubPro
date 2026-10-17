@@ -6,15 +6,17 @@ using OmenHub.Core.Settings;
 namespace OmenHub.Hardware.Lighting
 {
     /// <summary>
-    /// Keeps the lighting alive while the application runs: sends frames to the keyboard's lamps about ten times a second
-    /// and, when the bar colours change, writes them to the BIOS colour table too (the BIOS keeps them after exit).
-    /// Hands the keyboard back to its own effects when the application exits.
+    /// Keeps the lighting alive while the application runs. The keyboard lamps 0-102 are sent about ten times a second.
+    /// The lamps 103-119 are shared with the bottom light bar: they are written only when their colour changes, and the
+    /// BIOS bar colours are rewritten right after, because the BIOS wins at the moment of writing while a later lamp
+    /// update would light the bar again. The keyboard is handed back to its own effects on exit.
     /// </summary>
     public static class LightingEngine
     {
         private const int FrameMilliseconds = 100;
         private const int KeepAliveMilliseconds = 2000;
         private const int RetryMilliseconds = 3000;
+        private const int FirstSharedLamp = LightingFrameRenderer.AnimatedLastLamp + 1;
 
         private static Thread workerThread;
         private static volatile bool running;
@@ -47,16 +49,22 @@ namespace OmenHub.Hardware.Lighting
                 if (keyboard == null) keyboard = TakeControl();
                 if (keyboard == null) { Thread.Sleep(RetryMilliseconds); continue; }
 
-                ApplyBiosBarIfChanged();
                 byte[][] frame = LightingFrameRenderer.Render(keyboard.LampCount, clock.Elapsed.TotalSeconds);
-                bool changed = lastFrame == null || !SameFrame(frame, lastFrame);
+                bool animatedChanged = lastFrame == null || RegionDiffers(frame, lastFrame, 0, FirstSharedLamp - 1);
                 bool keepAliveDue = clock.ElapsedMilliseconds - lastSendMilliseconds > KeepAliveMilliseconds;
-                if (changed || keepAliveDue)
+                if (animatedChanged || keepAliveDue)
                 {
-                    keyboard.PaintEach(delegate (int lampIndex) { return frame[lampIndex]; });
-                    lastFrame = frame;
+                    keyboard.PaintLamps(0, FirstSharedLamp - 1, delegate (int lampIndex) { return frame[lampIndex]; });
                     lastSendMilliseconds = clock.ElapsedMilliseconds;
                 }
+                bool sharedChanged = lastFrame == null || RegionDiffers(frame, lastFrame, FirstSharedLamp, frame.Length - 1);
+                if (sharedChanged)
+                {
+                    keyboard.PaintLamps(FirstSharedLamp, frame.Length - 1, delegate (int lampIndex) { return frame[lampIndex]; });
+                    lastBiosBarState = "";   // the lamp write may have lit the bar: force the BIOS colours again
+                }
+                lastFrame = frame;
+                ApplyBiosBarIfChanged();
                 Thread.Sleep(FrameMilliseconds);
             }
             Release(keyboard);
@@ -80,12 +88,12 @@ namespace OmenHub.Hardware.Lighting
             lastBiosBarState = state;
         }
 
-        private static bool SameFrame(byte[][] first, byte[][] second)
+        private static bool RegionDiffers(byte[][] first, byte[][] second, int firstLamp, int lastLamp)
         {
-            for (int lamp = 0; lamp < first.Length; lamp++)
+            for (int lamp = firstLamp; lamp <= lastLamp && lamp < first.Length; lamp++)
                 for (int channel = 0; channel < 3; channel++)
-                    if (first[lamp][channel] != second[lamp][channel]) return false;
-            return true;
+                    if (first[lamp][channel] != second[lamp][channel]) return true;
+            return false;
         }
 
         private static DirectLampArray Release(DirectLampArray keyboard)

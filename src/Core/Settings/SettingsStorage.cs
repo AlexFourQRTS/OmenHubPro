@@ -39,6 +39,8 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("ProAuto=" + (AppSettings.ProAutoEnabled ? 1 : 0));
                 text.AppendLine("BatteryEco=" + (AppSettings.BatteryEcoEnabled ? 1 : 0));
                 text.AppendLine("LightCtl=" + (AppSettings.LightingControlEnabled ? 1 : 0));
+                text.AppendLine("BarBackend=" + (int)AppSettings.BarMode);
+                text.AppendLine("KeyColors=" + KeyColorStorage.Serialize());
                 text.AppendLine("KeyboardLight=" + AppSettings.KeyboardLighting.Serialize());
                 text.AppendLine("BarLight=" + AppSettings.BarLighting.Serialize());
                 File.WriteAllText(FilePath, text.ToString());
@@ -63,6 +65,10 @@ namespace OmenHub.Core.Settings
                 AppSettings.ProAutoEnabled = ReadNumber(values, "ProAuto", 1) == 1;
                 AppSettings.BatteryEcoEnabled = ReadNumber(values, "BatteryEco", 1) == 1;
                 AppSettings.LightingControlEnabled = ReadNumber(values, "LightCtl", 0) == 1;
+                AppSettings.BarMode = (BarBackend)ReadNumber(values, "BarBackend", 0);
+                string keyColorText;
+                values.TryGetValue("KeyColors", out keyColorText);
+                KeyColorStorage.Deserialize(keyColorText);
                 string lightingText;
                 values.TryGetValue("KeyboardLight", out lightingText);
                 AppSettings.KeyboardLighting = ZoneLighting.Deserialize(lightingText, AppSettings.KeyboardLighting);

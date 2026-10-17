@@ -103,13 +103,20 @@ namespace OmenHub.Hardware.Lighting
         /// <summary>Paints lamps one by one in groups of eight; colorOf returns {red, green, blue} for a lamp index.</summary>
         public bool PaintEach(Func<int, byte[]> colorOf)
         {
+            return PaintLamps(0, LampCount - 1, colorOf);
+        }
+
+        /// <summary>Paints only lamps firstLamp..lastLamp; other lamps are left untouched.</summary>
+        public bool PaintLamps(int firstLamp, int lastLamp, Func<int, byte[]> colorOf)
+        {
             bool allAccepted = true;
-            for (int first = 0; first < LampCount; first += LampsPerMultiUpdate)
+            int lastAllowed = Math.Min(lastLamp, LampCount - 1);
+            for (int first = firstLamp; first <= lastAllowed; first += LampsPerMultiUpdate)
             {
-                int count = Math.Min(LampsPerMultiUpdate, LampCount - first);
+                int count = Math.Min(LampsPerMultiUpdate, lastAllowed - first + 1);
                 byte[] report = NewReport(ReportMultiUpdate);
                 report[1] = (byte)count;
-                report[2] = first + count >= LampCount ? UpdateComplete : (byte)0;
+                report[2] = first + count > lastAllowed ? UpdateComplete : (byte)0;
                 for (int slot = 0; slot < count; slot++)
                 {
                     WriteUInt16(report, 3 + slot * 2, first + slot);

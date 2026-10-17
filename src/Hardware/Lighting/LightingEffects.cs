@@ -28,6 +28,12 @@ namespace OmenHub.Hardware.Lighting
             }
         }
 
+        /// <summary>Scales an {red, green, blue} colour by a brightness factor (0..1).</summary>
+        public static byte[] Dim(byte[] color, double factor)
+        {
+            return Scale(color[0], color[1], color[2], factor);
+        }
+
         private static byte[] Scale(int red, int green, int blue, double factor)
         {
             return new[] { (byte)(red * factor), (byte)(green * factor), (byte)(blue * factor) };

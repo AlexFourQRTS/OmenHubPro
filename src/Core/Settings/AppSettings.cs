@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace OmenHub.Core.Settings
 {
     public enum FanMode { Auto = 0, Max = 1, Manual = 2, Curve = 3 }
@@ -26,6 +28,10 @@ namespace OmenHub.Core.Settings
         public static bool ProAutoEnabled = true;
         public static bool BatteryEcoEnabled = true;
         public static bool LightingControlEnabled = false;   // false = the keyboard runs its own effects
+        public static BarBackend BarMode = BarBackend.Bios;
+
+        /// <summary>Per-key colour overrides on top of the keyboard zone colour: lamp index to {red, green, blue}.</summary>
+        public static readonly ConcurrentDictionary<int, byte[]> KeyColors = new ConcurrentDictionary<int, byte[]>();
         public static ZoneLighting KeyboardLighting = ZoneLighting.Create(255, 138, 31, LightingEffect.Static);
         public static ZoneLighting BarLighting = ZoneLighting.Create(155, 107, 255, LightingEffect.Static);
 

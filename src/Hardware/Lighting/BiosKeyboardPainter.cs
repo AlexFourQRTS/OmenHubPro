@@ -47,6 +47,14 @@ namespace OmenHub.Hardware.Lighting
             return result + "исходные цвета возвращены";
         }
 
+        /// <summary>Sets all four light-bar zones to one colour through the BIOS table (the colour persists after the app exits).</summary>
+        public static bool SetBarColor(byte red, byte green, byte blue)
+        {
+            byte[] table;
+            if (!BiosInterface.Call(BiosInterface.KeyboardCommand, CommandGetColorTable, null, TableBytes, out table)) return false;
+            return PaintAllZones(table, red, green, blue, false);
+        }
+
         public static string BlinkBacklight(int rounds)
         {
             string result = "";

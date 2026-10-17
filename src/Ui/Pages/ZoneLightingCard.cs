@@ -17,7 +17,7 @@ namespace OmenHub.Ui.Pages
         public ZoneLightingCard(string title, string subtitle, ZoneLighting zone, int top)
         {
             this.zone = zone;
-            Left = 24; Top = top; Width = 802; Height = 248;
+            Left = 24; Top = top; Width = 802; Height = 232;
             PageKit.MakeLabel(this, title, 20, 14, 11, true, PageKit.RoleText);
             PageKit.MakeLabel(this, subtitle, 20, 38, 8.5f, false, PageKit.RoleSub);
 

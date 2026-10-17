@@ -1,3 +1,3 @@
 old instance exited
-csc: 
+csc: Ui\Controls\KeyMapView.cs(14,27): warning CS0108: "OmenHub.Ui.Controls.KeyMapView.Margin" скрывает наследуемый член "System.Windows.Forms.Control.Margin". Если скрытие было намеренным, используйте новое ключевое слово. c:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll: (Местоположение символа относительно предыдущего предупреждения)
 new instance running: True

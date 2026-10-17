@@ -15,11 +15,16 @@ namespace OmenHub.Ui.Pages
             profileCard.ProfileChanged += delegate { cpuCard.LoadFromSettings(); };
         }
 
+        public override void ShowSnapshot(OmenHub.Hardware.Sensors.SensorSnapshot snapshot)
+        {
+            gpuCard.ShowLive();
+        }
+
         public override void LoadFromSettings()
         {
             profileCard.LoadFromSettings();
             cpuCard.LoadFromSettings();
-            gpuCard.RefreshBiosMode();
+            gpuCard.LoadFromSettings();
         }
     }
 }

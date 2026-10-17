@@ -28,6 +28,12 @@ namespace OmenHub.Core.Settings
         public static bool BatteryEcoEnabled = true;
         public static volatile bool LabEnabled = false;   // shows the lighting laboratory page in the menu
 
+        public const int MinimumGpuWatts = 30;
+        public const int MaximumGpuWatts = 140;
+        public const int GpuWattsStep = 5;
+        public static volatile bool GpuLimitEnabled = false;
+        public static volatile int GpuWatts = 80;
+
         public static ZoneLighting KeyboardLighting = new ZoneLighting();   // plain white by default
 
         public const int BarZoneCount = 4;

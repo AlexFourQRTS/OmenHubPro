@@ -6,6 +6,7 @@ using OmenHub.Core.Processes;
 using OmenHub.Core.Settings;
 using OmenHub.Engine;
 using OmenHub.Hardware.Bios;
+using OmenHub.Hardware.Gpu;
 using OmenHub.Hardware.Lighting;
 using OmenHub.Ui.Shell;
 using OmenHub.Ui.Theme;
@@ -34,11 +35,13 @@ namespace OmenHub.App
 
                 ControlEngine.Start();
                 LightingEngine.Start();
+                GpuPowerGovernor.Start();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 var window = new MainForm(Array.IndexOf(arguments, "/autostart") >= 0);
                 ListenForQuitRequest(window);
                 Application.Run(window);
+                GpuPowerGovernor.Stop();
                 LightingEngine.Stop();
                 ControlEngine.Stop();
                 SettingsStorage.Save();

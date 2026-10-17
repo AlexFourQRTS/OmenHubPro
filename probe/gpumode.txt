@@ -1,0 +1,5 @@
+﻿start: mode=01-01-01-00  driver: 16.51 W, 140.00 W, 80.00 W, 3090 MHz
+TGP off, PPAB on   write accepted=True  readback=00-01-01-00  driver: 16.85 W, 80.00 W, 80.00 W, 3090 MHz
+TGP on,  PPAB off  write accepted=True  readback=01-00-01-00  driver: 18.28 W, 80.00 W, 80.00 W, 3090 MHz
+TGP off, PPAB off  write accepted=True  readback=00-00-01-00  driver: 17.33 W, 80.00 W, 80.00 W, 3090 MHz
+RESTORE original   write accepted=True  readback=01-01-01-00  driver: 17.01 W, 80.00 W, 80.00 W, 3090 MHz

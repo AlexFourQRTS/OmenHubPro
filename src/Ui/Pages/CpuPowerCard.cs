@@ -20,7 +20,7 @@ namespace OmenHub.Ui.Pages
 
         public CpuPowerCard()
         {
-            Left = 24; Top = 294; Width = 802; Height = 334;
+            Left = 24; Top = 304; Width = 802; Height = 326;
             PageKit.MakeLabel(this, "CPU: лимит мощности (RyzenAdj)", 20, 14, 11, true, PageKit.RoleText);
             PageKit.MakeLabel(this, "Диапазон 20–75 Вт, шаг 5. Использует tools\\ryzenadj\\ryzenadj.exe (драйвер WinRing0) — запускается только по кнопкам ниже.",
                 20, 42, 8.5f, false, PageKit.RoleSub);
@@ -34,7 +34,7 @@ namespace OmenHub.Ui.Pages
             benchmarkButton = PageKit.MakeButton(this, "Автотест 35 → 75 Вт", 404, 118, 230, false);
             outputBox = new TextBox
             {
-                Left = 20, Top = 166, Width = 762, Height = 150, Multiline = true, ReadOnly = true,
+                Left = 20, Top = 166, Width = 762, Height = 142, Multiline = true, ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical, Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None
             };
             Controls.Add(outputBox);

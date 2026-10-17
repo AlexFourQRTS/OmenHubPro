@@ -1,0 +1,21 @@
+﻿now: mode=01-01-01-00  driver: 17.65 W, 80.00 W
+A) write 01 01 01 00 again
+  A +2s  mode=01-01-01-00  driver: 16.00 W, 80.00 W
+  A +4s  mode=01-01-01-00  driver: 13.98 W, 80.00 W
+  A +6s  mode=01-01-01-00  driver: 17.90 W, 80.00 W
+  A +8s  mode=01-01-01-00  driver: 14.26 W, 80.00 W
+  A +10s  mode=01-01-01-00  driver: 14.76 W, 80.00 W
+B) write 00 00 01 00 then 01 01 01 00 (full cycle)
+  B +2s  mode=01-01-01-00  driver: 16.73 W, 80.00 W
+  B +4s  mode=01-01-01-00  driver: 13.91 W, 80.00 W
+  B +6s  mode=01-01-01-00  driver: 16.22 W, 80.00 W
+  B +8s  mode=01-01-01-00  driver: 17.52 W, 80.00 W
+  B +10s  mode=01-01-01-00  driver: 17.64 W, 80.00 W
+C) write 01 01 02 00 (dState 2)
+  C +2s  mode=01-01-01-00  driver: 16.26 W, 80.00 W
+  C +4s  mode=01-01-01-00  driver: 16.13 W, 80.00 W
+  C +6s  mode=01-01-01-00  driver: 16.19 W, 80.00 W
+D) back to 01 01 01 00
+  D +2s  mode=01-01-01-00  driver: 16.37 W, 80.00 W
+  D +4s  mode=01-01-01-00  driver: 16.48 W, 80.00 W
+  D +6s  mode=01-01-01-00  driver: 16.40 W, 80.00 W

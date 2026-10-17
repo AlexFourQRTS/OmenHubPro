@@ -42,6 +42,8 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("BarBright=" + AppSettings.BarBrightnessPercent);
                 text.AppendLine("BarOn=" + (AppSettings.BarEnabled ? 1 : 0));
                 text.AppendLine("Lab=" + (AppSettings.LabEnabled ? 1 : 0));
+                text.AppendLine("GpuLimit=" + (AppSettings.GpuLimitEnabled ? 1 : 0));
+                text.AppendLine("GpuW=" + AppSettings.GpuWatts);
                 text.AppendLine("KeyboardLight=" + AppSettings.KeyboardLighting.Serialize());
                 File.WriteAllText(FilePath, text.ToString());
             }
@@ -66,6 +68,8 @@ namespace OmenHub.Core.Settings
                 AppSettings.BatteryEcoEnabled = ReadNumber(values, "BatteryEco", 1) == 1;
                 AppSettings.BarEnabled = ReadNumber(values, "BarOn", 1) == 1;
                 AppSettings.LabEnabled = ReadNumber(values, "Lab", 0) == 1;
+                AppSettings.GpuLimitEnabled = ReadNumber(values, "GpuLimit", 0) == 1;
+                AppSettings.GpuWatts = Math.Max(AppSettings.MinimumGpuWatts, Math.Min(AppSettings.MaximumGpuWatts, ReadNumber(values, "GpuW", 80)));
                 string barZoneText;
                 values.TryGetValue("BarZones", out barZoneText);
                 BarZoneStorage.Deserialize(barZoneText);

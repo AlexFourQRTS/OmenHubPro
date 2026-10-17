@@ -224,7 +224,68 @@ namespace OmenHub
                 tbRyzen.Text = sb.ToString().Replace("\r\n", "\n").Replace("\n", "\r\n");
             };
             a2.Click += delegate { tbRyzen.Text = Ryzen("-i"); };
+            var a3 = Button(c, "Автотест 35 → 75 Вт", 404, 118, 230, false);
+            a3.Click += delegate
+            {
+                a3.Enabled = false; tbRyzen.Text = "Тест идёт (~40 с): нагрузка на все ядра, замеры в logs\\omenhub.log ...";
+                var t = new Thread(PowerTest); t.IsBackground = true; t.Start();
+            };
         }
+
+        static double Field(string info, string name)
+        {
+            foreach (string line in info.Split('\n'))
+                if (line.IndexOf("| " + name, StringComparison.Ordinal) >= 0)
+                {
+                    string[] p = line.Split('|');
+                    double v;
+                    if (p.Length > 2 && double.TryParse(p[2].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out v)) return v;
+                }
+            return double.NaN;
+        }
+
+        void PowerTest()
+        {
+            var result = new System.Text.StringBuilder();
+            try
+            {
+                foreach (int w in new[] { 35, 75 })
+                {
+                    int mw = w * 1000;
+                    Log.W("TEST: set " + w + " W");
+                    Ryzen("--stapm-limit=" + mw + " --fast-limit=" + mw + " --slow-limit=" + mw);
+                    Thread.Sleep(1500);
+                    volatile_stop = false;
+                    var ths = new Thread[Environment.ProcessorCount];
+                    for (int i = 0; i < ths.Length; i++) { ths[i] = new Thread(Burn); ths[i].IsBackground = true; ths[i].Start(); }
+                    double maxFast = 0, maxSlow = 0, maxStapm = 0; int maxMhz = 0;
+                    for (int s = 1; s <= 6; s++)
+                    {
+                        Thread.Sleep(2000);
+                        string info = Ryzen("-i");
+                        double fast = Field(info, "PPT VALUE FAST"), slow = Field(info, "PPT VALUE SLOW"), st = Field(info, "STAPM VALUE");
+                        double lf = Field(info, "PPT LIMIT FAST"), ls = Field(info, "STAPM LIMIT");
+                        var sn = Engine.S;
+                        Log.W(string.Format("TEST limit={0}W t={1}s  stapmLimit={2} pptLimitFast={3}  VALUE fast={4:0.0} slow={5:0.0} stapm={6:0.0}  cpuMHz={7} load={8:0}% sysT={9} gpuT={10}",
+                            w, s * 2, ls, lf, fast, slow, st, sn.CpuMhz, sn.CpuLoad, sn.SysTemp, sn.GpuTemp));
+                        if (!double.IsNaN(fast)) maxFast = Math.Max(maxFast, fast);
+                        if (!double.IsNaN(slow)) maxSlow = Math.Max(maxSlow, slow);
+                        if (!double.IsNaN(st)) maxStapm = Math.Max(maxStapm, st);
+                        maxMhz = Math.Max(maxMhz, sn.CpuMhz);
+                        if (sn.SysTemp >= 90) { Log.W("TEST aborted: temperature " + sn.SysTemp); break; }
+                    }
+                    volatile_stop = true;
+                    result.AppendLine(string.Format("Лимит {0} Вт: пик потребления fast={1:0.0} Вт, slow={2:0.0} Вт, stapm={3:0.0} Вт, частота до {4} МГц", w, maxFast, maxSlow, maxStapm, maxMhz));
+                    Thread.Sleep(5000);
+                }
+            }
+            catch (Exception e) { Log.W("TEST error: " + e); result.AppendLine("Ошибка: " + e.Message); }
+            volatile_stop = true;
+            Log.W("TEST done\r\n" + result);
+            BeginInvoke(new Action(delegate { tbRyzen.Text = result.ToString().Replace("\n", "\r\n"); foreach (Control ch in tbRyzen.Parent.Controls) if (ch is Btn) ch.Enabled = true; }));
+        }
+        static volatile bool volatile_stop;
+        static void Burn() { double x = 1.0001; while (!volatile_stop) { for (int i = 0; i < 100000; i++) x = Math.Sqrt(x * 1.0000001 + 0.5); if (x < 0) break; } }
         string Short(string s) { s = s.Replace("\r", " ").Replace("\n", " "); return s.Length > 70 ? s.Substring(0, 70) + "…" : s; }
         string Ryzen(string args)
         {

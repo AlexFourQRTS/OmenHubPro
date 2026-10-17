@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using OmenHub.Core.Settings;
 using OmenHub.Ui.Controls;
 using OmenHub.Ui.Pages;
 using OmenHub.Ui.Theme;
@@ -18,7 +19,7 @@ namespace OmenHub.Ui.Shell
         private StatChip cpuFanChip, gpuFanChip;
         private PageBase[] pages;
         private NavButton[] navButtons;
-        private readonly string[] pageNames = { "Обзор", "Вентиляторы", "Мощность", "Подсветка", "Лаборатория", "Настройки" };
+        private readonly string[] pageNames = { "Обзор", "Вентиляторы", "Мощность", "Подсветка", "Настройки", "Лаборатория" };
 
         private void BuildFrame()
         {
@@ -56,11 +57,21 @@ namespace OmenHub.Ui.Shell
             Load += placeChips;
         }
 
+        private int LabPageIndex { get { return pages.Length - 1; } }
+
+        /// <summary>The laboratory is the last page and is listed in the menu only when enabled in the settings.</summary>
+        private void ApplyLabVisibility()
+        {
+            navButtons[LabPageIndex].Visible = AppSettings.LabEnabled;
+            if (!AppSettings.LabEnabled && currentPage == LabPageIndex) ShowPage(0);
+        }
+
         private void BuildPages()
         {
             var settingsPage = new SettingsPage(this);
             settingsPage.FansHandedBack += delegate { ShowPage(currentPage); };
-            pages = new PageBase[] { new OverviewPage(), new FansPage(), new PowerPage(), new LightingPage(), new LightingLabPage(), settingsPage };
+            settingsPage.LabVisibilityChanged += delegate { ApplyLabVisibility(); };
+            pages = new PageBase[] { new OverviewPage(), new FansPage(), new PowerPage(), new LightingPage(), settingsPage, new LightingLabPage() };
             navButtons = new NavButton[pages.Length];
             for (int index = 0; index < pages.Length; index++)
             {

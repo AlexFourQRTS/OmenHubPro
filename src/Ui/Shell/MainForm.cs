@@ -28,6 +28,7 @@ namespace OmenHub.Ui.Shell
             BuildFrame();
             BuildPages();
             ThemeApplier.Apply(this);
+            ApplyLabVisibility();
             ShowPage(0);
             WireShellEvents();
 

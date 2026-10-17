@@ -69,26 +69,26 @@ namespace OmenHub.Ui.Controls
             if (ColorChanged != null) ColorChanged(this, EventArgs.Empty);
         }
 
-        protected override void OnMouseDown(MouseEventArgs e) { isDragging = true; Capture = true; PickAt(e.X, e.Y); }
-        protected override void OnMouseMove(MouseEventArgs e) { if (isDragging) PickAt(e.X, e.Y); }
-        protected override void OnMouseUp(MouseEventArgs e) { isDragging = false; Capture = false; }
+        protected override void OnMouseDown(MouseEventArgs eventArgs) { isDragging = true; Capture = true; PickAt(eventArgs.X, eventArgs.Y); }
+        protected override void OnMouseMove(MouseEventArgs eventArgs) { if (isDragging) PickAt(eventArgs.X, eventArgs.Y); }
+        protected override void OnMouseUp(MouseEventArgs eventArgs) { isDragging = false; Capture = false; }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
             EnsureGradient();
             var area = new RectangleF(0, 0, Width - 1, Height - 1);
             using (var path = UiDrawing.RoundedRectangle(area, CornerRadius))
             {
-                e.Graphics.SetClip(path);
-                e.Graphics.DrawImage(gradient, 0, 0, Width, Height);
-                e.Graphics.ResetClip();
-                using (var border = new Pen(Palette.Border)) e.Graphics.DrawPath(border, path);
+                eventArgs.Graphics.SetClip(path);
+                eventArgs.Graphics.DrawImage(gradient, 0, 0, Width, Height);
+                eventArgs.Graphics.ResetClip();
+                using (var border = new Pen(Palette.Border)) eventArgs.Graphics.DrawPath(border, path);
             }
             float markerX = marker.X * (Width - 1), markerY = marker.Y * (Height - 1);
-            using (var outer = new Pen(Color.White, 3)) e.Graphics.DrawEllipse(outer, markerX - 8, markerY - 8, 16, 16);
-            using (var inner = new Pen(Color.Black, 1)) e.Graphics.DrawEllipse(inner, markerX - 9, markerY - 9, 18, 18);
+            using (var outer = new Pen(Color.White, 3)) eventArgs.Graphics.DrawEllipse(outer, markerX - 8, markerY - 8, 16, 16);
+            using (var inner = new Pen(Color.Black, 1)) eventArgs.Graphics.DrawEllipse(inner, markerX - 9, markerY - 9, 18, 18);
         }
 
         private void EnsureGradient()

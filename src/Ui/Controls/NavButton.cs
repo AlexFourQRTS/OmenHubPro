@@ -19,26 +19,26 @@ namespace OmenHub.Ui.Controls
             Height = 44;
         }
 
-        protected override void OnMouseEnter(EventArgs e) { isHovered = true; Invalidate(); }
-        protected override void OnMouseLeave(EventArgs e) { isHovered = false; Invalidate(); }
+        protected override void OnMouseEnter(EventArgs eventArgs) { isHovered = true; Invalidate(); }
+        protected override void OnMouseLeave(EventArgs eventArgs) { isHovered = false; Invalidate(); }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            e.Graphics.Clear(Palette.Sidebar);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            eventArgs.Graphics.Clear(Palette.Sidebar);
             if (IsActive || isHovered)
             {
                 var area = new RectangleF(8, 2, Width - 16, Height - 4);
                 int alpha = IsActive ? 40 : 18;
                 using (var path = UiDrawing.RoundedRectangle(area, 8))
                 using (var brush = new SolidBrush(Color.FromArgb(alpha, Palette.Accent)))
-                    e.Graphics.FillPath(brush, path);
+                    eventArgs.Graphics.FillPath(brush, path);
             }
             if (IsActive)
                 using (var marker = new SolidBrush(Palette.AccentSecondary))
-                    e.Graphics.FillRectangle(marker, 0, 10, 4, Height - 20);
+                    eventArgs.Graphics.FillRectangle(marker, 0, 10, 4, Height - 20);
 
-            TextRenderer.DrawText(e.Graphics, Text, UiDrawing.GetFont(10.5f, IsActive), new Rectangle(24, 0, Width - 24, Height),
+            TextRenderer.DrawText(eventArgs.Graphics, Text, UiDrawing.GetFont(10.5f, IsActive), new Rectangle(24, 0, Width - 24, Height),
                 IsActive ? Palette.Text : Palette.SubText, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
         }
     }

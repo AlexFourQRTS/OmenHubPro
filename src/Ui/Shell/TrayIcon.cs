@@ -29,9 +29,9 @@ namespace OmenHub.Ui.Shell
             notifyIcon = new NotifyIcon { ContextMenuStrip = menu, Text = "OmenHub", Visible = true };
             try { notifyIcon.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); }
             catch { notifyIcon.Icon = SystemIcons.Application; }
-            notifyIcon.MouseClick += delegate (object sender, MouseEventArgs e)
+            notifyIcon.MouseClick += delegate (object sender, MouseEventArgs eventArgs)
             {
-                if (e.Button == MouseButtons.Left) Raise(OpenRequested);
+                if (eventArgs.Button == MouseButtons.Left) Raise(OpenRequested);
             };
         }
 

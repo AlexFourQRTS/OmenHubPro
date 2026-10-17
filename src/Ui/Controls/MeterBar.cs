@@ -19,15 +19,15 @@ namespace OmenHub.Ui.Controls
             Height = 8;
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
 
             var trackArea = new RectangleF(0, 0, Width - 1, Height - 1);
             using (var path = UiDrawing.RoundedRectangle(trackArea, Height / 2f))
             using (var brush = new SolidBrush(Palette.Track))
-                e.Graphics.FillPath(brush, path);
+                eventArgs.Graphics.FillPath(brush, path);
 
             double clamped = Math.Max(0, Math.Min(1, Fraction));
             if (clamped <= 0.01) return;
@@ -36,7 +36,7 @@ namespace OmenHub.Ui.Controls
             Color endColor = WarningColor ?? Palette.GradientEnd;
             using (var path = UiDrawing.RoundedRectangle(filledArea, Height / 2f))
             using (var gradient = new LinearGradientBrush(new RectangleF(0, 0, Math.Max(2, filledArea.Width), Height), startColor, endColor, 0f))
-                e.Graphics.FillPath(gradient, path);
+                eventArgs.Graphics.FillPath(gradient, path);
         }
     }
 }

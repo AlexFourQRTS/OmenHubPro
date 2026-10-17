@@ -15,17 +15,17 @@ namespace OmenHub.Ui.Controls
             SetStyle(ControlStyles.ResizeRedraw, true);
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
             var area = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
             using (var path = UiDrawing.RoundedRectangle(area, CornerRadius))
             using (var fill = new SolidBrush(Palette.CardSurface))
             using (var border = new Pen(Palette.Border))
             {
-                e.Graphics.FillPath(fill, path);
-                e.Graphics.DrawPath(border, path);
+                eventArgs.Graphics.FillPath(fill, path);
+                eventArgs.Graphics.DrawPath(border, path);
             }
         }
     }

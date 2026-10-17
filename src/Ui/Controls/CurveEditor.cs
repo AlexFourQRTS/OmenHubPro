@@ -52,26 +52,26 @@ namespace OmenHub.Ui.Controls
             return nearest;
         }
 
-        protected override void OnMouseDown(MouseEventArgs e)
+        protected override void OnMouseDown(MouseEventArgs eventArgs)
         {
-            int index = FindPointNear(e.X, e.Y);
-            if (e.Button == MouseButtons.Right) { RemovePoint(index); return; }
+            int index = FindPointNear(eventArgs.X, eventArgs.Y);
+            if (eventArgs.Button == MouseButtons.Right) { RemovePoint(index); return; }
             draggedIndex = index;
             if (draggedIndex >= 0) { Capture = true; Invalidate(); }
         }
 
-        protected override void OnMouseMove(MouseEventArgs e)
+        protected override void OnMouseMove(MouseEventArgs eventArgs)
         {
             if (draggedIndex < 0) return;
             int[] temperatures = Curve.Temperatures;
             int lowest = draggedIndex == 0 ? MinimumTemperature : temperatures[draggedIndex - 1] + 1;
             int highest = draggedIndex == temperatures.Length - 1 ? MaximumTemperature : temperatures[draggedIndex + 1] - 1;
-            temperatures[draggedIndex] = Math.Max(lowest, Math.Min(highest, TemperatureAt(e.X)));
-            Curve.Rpms[draggedIndex] = RpmAtY(e.Y);
+            temperatures[draggedIndex] = Math.Max(lowest, Math.Min(highest, TemperatureAt(eventArgs.X)));
+            Curve.Rpms[draggedIndex] = RpmAtY(eventArgs.Y);
             Invalidate();
         }
 
-        protected override void OnMouseUp(MouseEventArgs e)
+        protected override void OnMouseUp(MouseEventArgs eventArgs)
         {
             if (draggedIndex < 0) return;
             draggedIndex = -1;
@@ -80,10 +80,10 @@ namespace OmenHub.Ui.Controls
             RaiseEdited();
         }
 
-        protected override void OnMouseDoubleClick(MouseEventArgs e)
+        protected override void OnMouseDoubleClick(MouseEventArgs eventArgs)
         {
-            if (e.Button != MouseButtons.Left || Curve.Temperatures.Length >= FanCurve.MaximumPoints) return;
-            int temperature = Math.Max(MinimumTemperature + 1, Math.Min(MaximumTemperature - 1, TemperatureAt(e.X)));
+            if (eventArgs.Button != MouseButtons.Left || Curve.Temperatures.Length >= FanCurve.MaximumPoints) return;
+            int temperature = Math.Max(MinimumTemperature + 1, Math.Min(MaximumTemperature - 1, TemperatureAt(eventArgs.X)));
             if (Array.IndexOf(Curve.Temperatures, temperature) >= 0) return;
 
             var temperatures = new List<int>(Curve.Temperatures);
@@ -91,7 +91,7 @@ namespace OmenHub.Ui.Controls
             int insertAt = 0;
             while (insertAt < temperatures.Count && temperatures[insertAt] < temperature) insertAt++;
             temperatures.Insert(insertAt, temperature);
-            rpms.Insert(insertAt, RpmAtY(e.Y));
+            rpms.Insert(insertAt, RpmAtY(eventArgs.Y));
             Curve.Rpms = rpms.ToArray();
             Curve.Temperatures = temperatures.ToArray();
             RaiseEdited();

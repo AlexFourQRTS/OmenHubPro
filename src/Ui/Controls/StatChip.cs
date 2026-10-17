@@ -19,24 +19,24 @@ namespace OmenHub.Ui.Controls
             Height = 48;
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
             var area = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
             using (var path = UiDrawing.RoundedRectangle(area, 10))
             using (var fill = new SolidBrush(Palette.CardSurface))
             using (var border = new Pen(IsAlert ? Palette.Bad : Palette.Border))
             {
-                e.Graphics.FillPath(fill, path);
-                e.Graphics.DrawPath(border, path);
+                eventArgs.Graphics.FillPath(fill, path);
+                eventArgs.Graphics.DrawPath(border, path);
             }
             using (var marker = new SolidBrush(IsAlert ? Palette.Bad : Palette.AccentSecondary))
-                e.Graphics.FillRectangle(marker, 0, 12, 3, Height - 24);
+                eventArgs.Graphics.FillRectangle(marker, 0, 12, 3, Height - 24);
 
-            TextRenderer.DrawText(e.Graphics, Title, UiDrawing.GetFont(8, false), new Rectangle(14, 5, Width - 20, 16),
+            TextRenderer.DrawText(eventArgs.Graphics, Title, UiDrawing.GetFont(8, false), new Rectangle(14, 5, Width - 20, 16),
                 Palette.SubText, TextFormatFlags.Left);
-            TextRenderer.DrawText(e.Graphics, Value, UiDrawing.GetFont(13, true), new Rectangle(14, 20, Width - 20, 26),
+            TextRenderer.DrawText(eventArgs.Graphics, Value, UiDrawing.GetFont(13, true), new Rectangle(14, 20, Width - 20, 26),
                 IsAlert ? Palette.Bad : Palette.Text, TextFormatFlags.Left);
         }
     }

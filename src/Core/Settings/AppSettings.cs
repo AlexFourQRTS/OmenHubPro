@@ -48,6 +48,7 @@ namespace OmenHub.Core.Settings
         public static byte[] OverlayColor = { 255, 138, 31 };
         public static volatile bool OverlayShowCpu = true, OverlayShowGpu = true, OverlayShowRam = true;
         public static volatile bool OverlayShowTemperature = true, OverlayShowPower = true, OverlayShowFan = true;
+        public static volatile bool OverlayShowFps = true;
 
         public static ZoneLighting KeyboardLighting = new ZoneLighting();   // plain white by default
 

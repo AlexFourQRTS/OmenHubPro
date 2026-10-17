@@ -6,6 +6,7 @@ using OmenHub.Core.Processes;
 using OmenHub.Core.Settings;
 using OmenHub.Engine;
 using OmenHub.Hardware.Bios;
+using OmenHub.Hardware.Fps;
 using OmenHub.Hardware.Gpu;
 using OmenHub.Hardware.Lighting;
 using OmenHub.Ui.Shell;
@@ -36,11 +37,13 @@ namespace OmenHub.App
                 ControlEngine.Start();
                 LightingEngine.Start();
                 GpuPowerGovernor.Start();
+                FpsCounter.Start();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 var window = new MainForm(Array.IndexOf(arguments, "/autostart") >= 0);
                 ListenForQuitRequest(window);
                 Application.Run(window);
+                FpsCounter.StopNow();
                 GpuPowerGovernor.Stop();
                 LightingEngine.Stop();
                 ControlEngine.Stop();
@@ -69,15 +72,15 @@ namespace OmenHub.App
 
         private static void HookCrashLogging()
         {
-            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs e)
+            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs eventArgs)
             {
-                AppLog.Write("UNHANDLED: " + e.ExceptionObject);
+                AppLog.Write("UNHANDLED: " + eventArgs.ExceptionObject);
                 try { BiosFanCommands.SetFanMax(false); }   // never leave the fans stuck in manual mode
                 catch { }
             };
-            Application.ThreadException += delegate (object sender, ThreadExceptionEventArgs e)
+            Application.ThreadException += delegate (object sender, ThreadExceptionEventArgs eventArgs)
             {
-                AppLog.Write("UI EXCEPTION: " + e.Exception);
+                AppLog.Write("UI EXCEPTION: " + eventArgs.Exception);
             };
         }
     }

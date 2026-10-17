@@ -48,33 +48,33 @@ namespace OmenHub.Ui.Controls
             if (ValueChanged != null) ValueChanged(this, EventArgs.Empty);
         }
 
-        protected override void OnMouseDown(MouseEventArgs e) { isDragging = true; Capture = true; MoveToPosition(e.X); }
-        protected override void OnMouseMove(MouseEventArgs e) { if (isDragging) MoveToPosition(e.X); }
-        protected override void OnMouseUp(MouseEventArgs e) { isDragging = false; Capture = false; }
+        protected override void OnMouseDown(MouseEventArgs eventArgs) { isDragging = true; Capture = true; MoveToPosition(eventArgs.X); }
+        protected override void OnMouseMove(MouseEventArgs eventArgs) { if (isDragging) MoveToPosition(eventArgs.X); }
+        protected override void OnMouseUp(MouseEventArgs eventArgs) { isDragging = false; Capture = false; }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
             float fraction = (float)(currentValue - Minimum) / Math.Max(1, Maximum - Minimum);
             float thumbX = HorizontalPadding + fraction * (Width - 2 * HorizontalPadding);
             float centerY = Height / 2f;
             float trackWidth = Width - 2 * HorizontalPadding;
 
             using (var track = new SolidBrush(Palette.Track))
-                e.Graphics.FillRectangle(track, HorizontalPadding, centerY - 3, trackWidth, 6);
+                eventArgs.Graphics.FillRectangle(track, HorizontalPadding, centerY - 3, trackWidth, 6);
 
             float filledWidth = thumbX - HorizontalPadding;
             if (filledWidth > 0)
             {
                 var filledArea = new RectangleF(HorizontalPadding, centerY - 3, Math.Max(2, filledWidth), 6);
                 using (var gradient = new LinearGradientBrush(filledArea, Palette.Accent, Palette.GradientEnd, 0f))
-                    e.Graphics.FillRectangle(gradient, filledArea);
+                    eventArgs.Graphics.FillRectangle(gradient, filledArea);
             }
             using (var thumb = new SolidBrush(Color.White))
-                e.Graphics.FillEllipse(thumb, thumbX - 9, centerY - 9, 18, 18);
+                eventArgs.Graphics.FillEllipse(thumb, thumbX - 9, centerY - 9, 18, 18);
             using (var outline = new Pen(Palette.Accent, 3))
-                e.Graphics.DrawEllipse(outline, thumbX - 8, centerY - 8, 16, 16);
+                eventArgs.Graphics.DrawEllipse(outline, thumbX - 8, centerY - 8, 16, 16);
         }
     }
 }

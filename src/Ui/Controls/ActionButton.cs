@@ -21,15 +21,15 @@ namespace OmenHub.Ui.Controls
             Height = 34;
         }
 
-        protected override void OnMouseEnter(EventArgs e) { isHovered = true; Invalidate(); }
-        protected override void OnMouseLeave(EventArgs e) { isHovered = false; isPressed = false; Invalidate(); }
-        protected override void OnMouseDown(MouseEventArgs e) { isPressed = true; Invalidate(); base.OnMouseDown(e); }
-        protected override void OnMouseUp(MouseEventArgs e) { isPressed = false; Invalidate(); base.OnMouseUp(e); }
+        protected override void OnMouseEnter(EventArgs eventArgs) { isHovered = true; Invalidate(); }
+        protected override void OnMouseLeave(EventArgs eventArgs) { isHovered = false; isPressed = false; Invalidate(); }
+        protected override void OnMouseDown(MouseEventArgs eventArgs) { isPressed = true; Invalidate(); base.OnMouseDown(eventArgs); }
+        protected override void OnMouseUp(MouseEventArgs eventArgs) { isPressed = false; Invalidate(); base.OnMouseUp(eventArgs); }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
 
             Color fill = IsAccent ? Palette.Accent : Palette.Track;
             if (!Enabled) fill = Palette.Track;
@@ -39,10 +39,10 @@ namespace OmenHub.Ui.Controls
             var area = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
             using (var path = UiDrawing.RoundedRectangle(area, 8))
             using (var brush = new SolidBrush(fill))
-                e.Graphics.FillPath(brush, path);
+                eventArgs.Graphics.FillPath(brush, path);
 
             Color textColor = !Enabled ? Palette.SubText : IsAccent ? Color.White : Palette.Text;
-            TextRenderer.DrawText(e.Graphics, Text, UiDrawing.GetFont(9.5f, true), new Rectangle(0, 0, Width, Height),
+            TextRenderer.DrawText(eventArgs.Graphics, Text, UiDrawing.GetFont(9.5f, true), new Rectangle(0, 0, Width, Height),
                 textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
         }
     }

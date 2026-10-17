@@ -7,42 +7,46 @@ using OmenHub.Ui.Theme;
 namespace OmenHub.Ui.Overlay
 {
     /// <summary>
-    /// Draws the overlay. Rows (CPU, GPU, memory) and values (temperature, power, fan speed) are chosen in the settings;
-    /// the panel width follows the chosen columns.
+    /// Draws the overlay. Rows: CPU and GPU (temperature, power, fan speed), memory with the C / G load in percent,
+    /// and FPS. Which rows and values appear is chosen in the settings; the panel width follows the content.
     /// </summary>
     public static class OverlayPainter
     {
         private const int RowHeight = 28;
         private const int Padding = 10;
         private const int LabelWidth = 52;
-        private const int TemperatureWidth = 78, PowerWidth = 88, FanWidth = 118, MemoryWidth = 160;
+        private const int TemperatureWidth = 78, PowerWidth = 88, FanWidth = 118, MemoryWidth = 270, FpsWidth = 90;
         private static readonly Color PanelBase = Color.FromArgb(18, 14, 28);
         private static readonly Color ValueBase = Color.FromArgb(240, 236, 250);
 
         private static int RowCount
         {
-            get { return (AppSettings.OverlayShowCpu ? 1 : 0) + (AppSettings.OverlayShowGpu ? 1 : 0) + (AppSettings.OverlayShowRam ? 1 : 0); }
+            get
+            {
+                return (AppSettings.OverlayShowCpu ? 1 : 0) + (AppSettings.OverlayShowGpu ? 1 : 0)
+                    + (AppSettings.OverlayShowRam ? 1 : 0) + (AppSettings.OverlayShowFps ? 1 : 0);
+            }
         }
 
-        private static int ColumnsWidth
+        private static int ContentWidth
         {
             get
             {
-                int width = (AppSettings.OverlayShowTemperature ? TemperatureWidth : 0) + (AppSettings.OverlayShowPower ? PowerWidth : 0)
+                int devices = (AppSettings.OverlayShowTemperature ? TemperatureWidth : 0) + (AppSettings.OverlayShowPower ? PowerWidth : 0)
                     + (AppSettings.OverlayShowFan ? FanWidth : 0);
                 bool deviceRows = AppSettings.OverlayShowCpu || AppSettings.OverlayShowGpu;
-                return Math.Max(deviceRows ? width : 0, AppSettings.OverlayShowRam ? MemoryWidth : 0);
+                return Math.Max(Math.Max(deviceRows ? devices : 0, AppSettings.OverlayShowRam ? MemoryWidth : 0), AppSettings.OverlayShowFps ? FpsWidth : 0);
             }
         }
 
         public static Size MeasureSize(float scale)
         {
-            int width = Padding + LabelWidth + Math.Max(60, ColumnsWidth) + Padding;
+            int width = Padding + LabelWidth + Math.Max(60, ContentWidth) + Padding;
             int height = Math.Max(1, RowCount) * RowHeight + 2 * Padding;
             return new Size((int)(width * scale), (int)(height * scale));
         }
 
-        public static void Paint(Graphics graphics, Size size, SensorSnapshot snapshot, float scale)
+        public static void Paint(Graphics graphics, Size size, SensorSnapshot snapshot, int fps, float scale)
         {
             UiDrawing.SetHighQuality(graphics);
             graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;   // ClearType cannot draw on a transparent bitmap
@@ -58,7 +62,8 @@ namespace OmenHub.Ui.Overlay
                     DrawDevice(graphics, font, scale, row++, label, "CPU", snapshot.CpuTemperature, snapshot.CpuPowerWatts, snapshot.CpuFanRpm);
                 if (AppSettings.OverlayShowGpu)
                     DrawDevice(graphics, font, scale, row++, label, "GPU", snapshot.GpuTemperature, snapshot.GpuPowerWatts, snapshot.GpuFanRpm);
-                if (AppSettings.OverlayShowRam) DrawMemory(graphics, font, scale, row, label, snapshot);
+                if (AppSettings.OverlayShowRam) DrawMemory(graphics, font, scale, row++, label, snapshot);
+                if (AppSettings.OverlayShowFps) DrawFps(graphics, font, scale, row, label, fps);
             }
         }
 
@@ -81,12 +86,25 @@ namespace OmenHub.Ui.Overlay
                 Draw(graphics, font, fanRpm < 0 ? "---- об/м" : fanRpm + " об/м", left, top, ValueBase);
         }
 
+        /// <summary>Memory in use, then the load in percent: C for the processor, G for the NVIDIA graphics card.</summary>
         private static void DrawMemory(Graphics graphics, Font font, float scale, int row, Color label, SensorSnapshot snapshot)
         {
             float top = (Padding + row * RowHeight) * scale;
             Draw(graphics, font, "RAM", Padding * scale, top, label);
-            string text = snapshot.RamUsedGb < 0 ? "--" : snapshot.RamUsedGb.ToString("0.0") + "/" + snapshot.RamTotalGb.ToString("0.0") + "ГБ";
-            Draw(graphics, font, text, (Padding + LabelWidth) * scale, top, ValueBase);
+            string memory = snapshot.RamUsedGb < 0 ? "--" : snapshot.RamUsedGb.ToString("0.0") + "ГБ";
+            string cpuLoad = snapshot.CpuLoadPercent < 0 ? "--" : snapshot.CpuLoadPercent.ToString("0");
+            string gpuLoad = snapshot.GpuUtilizationPercent < 0 ? "--" : snapshot.GpuUtilizationPercent.ToString();
+            float left = (Padding + LabelWidth) * scale;
+            Draw(graphics, font, memory, left, top, ValueBase);
+            Draw(graphics, font, "C " + cpuLoad + "%", left + 88 * scale, top, ValueBase);
+            Draw(graphics, font, "G " + gpuLoad + "%", left + 178 * scale, top, ValueBase);
+        }
+
+        private static void DrawFps(Graphics graphics, Font font, float scale, int row, Color label, int fps)
+        {
+            float top = (Padding + row * RowHeight) * scale;
+            Draw(graphics, font, "FPS", Padding * scale, top, label);
+            Draw(graphics, font, fps < 0 ? "--" : fps.ToString(), (Padding + LabelWidth) * scale, top, ValueBase);
         }
 
         private static void Draw(Graphics graphics, Font font, string text, float left, float top, Color color)

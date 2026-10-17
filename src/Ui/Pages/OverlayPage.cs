@@ -18,7 +18,7 @@ namespace OmenHub.Ui.Pages
         private readonly Label sizeLabel;
         private readonly Label fillLabel, textLabel;
         private readonly ColorPad colorPad;
-        private readonly SegmentedControl cpuSwitch, gpuSwitch, ramSwitch, temperatureSwitch, powerSwitch, fanSwitch;
+        private readonly SegmentedControl cpuSwitch, gpuSwitch, ramSwitch, fpsSwitch, temperatureSwitch, powerSwitch, fanSwitch;
 
         public OverlayPage()
         {
@@ -45,12 +45,13 @@ namespace OmenHub.Ui.Pages
 
             PageKit.MakeLabel(card, "Строки", 20, 392, 9.5f, true, PageKit.RoleText);
             cpuSwitch = MakeSwitch(card, 160, 378, "Процессор");
-            gpuSwitch = MakeSwitch(card, 330, 378, "Видеокарта");
-            ramSwitch = MakeSwitch(card, 500, 378, "ОЗУ");
+            gpuSwitch = MakeSwitch(card, 310, 378, "Видеокарта");
+            ramSwitch = MakeSwitch(card, 460, 378, "ОЗУ (C / G)");
+            fpsSwitch = MakeSwitch(card, 610, 378, "FPS");
             PageKit.MakeLabel(card, "Значения", 20, 468, 9.5f, true, PageKit.RoleText);
             temperatureSwitch = MakeSwitch(card, 160, 454, "Температура");
-            powerSwitch = MakeSwitch(card, 330, 454, "Мощность");
-            fanSwitch = MakeSwitch(card, 500, 454, "Обороты кулера");
+            powerSwitch = MakeSwitch(card, 310, 454, "Мощность");
+            fanSwitch = MakeSwitch(card, 460, 454, "Обороты кулера");
             WireEvents();
             LoadFromSettings();
         }
@@ -58,7 +59,7 @@ namespace OmenHub.Ui.Pages
         private static SegmentedControl MakeSwitch(CardPanel card, int left, int top, string name)
         {
             PageKit.MakeLabel(card, name, left, top, 8.5f, false, PageKit.RoleSub);
-            return PageKit.MakeSegments(card, left, top + 20, 150, new[] { "Вкл", "Выкл" }, 0);
+            return PageKit.MakeSegments(card, left, top + 20, 130, new[] { "Вкл", "Выкл" }, 0);
         }
 
         private void WireEvents()
@@ -72,6 +73,7 @@ namespace OmenHub.Ui.Pages
             cpuSwitch.SelectionChanged += delegate { AppSettings.OverlayShowCpu = cpuSwitch.SelectedIndex == 0; AppSettings.MarkChanged(); };
             gpuSwitch.SelectionChanged += delegate { AppSettings.OverlayShowGpu = gpuSwitch.SelectedIndex == 0; AppSettings.MarkChanged(); };
             ramSwitch.SelectionChanged += delegate { AppSettings.OverlayShowRam = ramSwitch.SelectedIndex == 0; AppSettings.MarkChanged(); };
+            fpsSwitch.SelectionChanged += delegate { AppSettings.OverlayShowFps = fpsSwitch.SelectedIndex == 0; AppSettings.MarkChanged(); };
             temperatureSwitch.SelectionChanged += delegate { AppSettings.OverlayShowTemperature = temperatureSwitch.SelectedIndex == 0; AppSettings.MarkChanged(); };
             powerSwitch.SelectionChanged += delegate { AppSettings.OverlayShowPower = powerSwitch.SelectedIndex == 0; AppSettings.MarkChanged(); };
             fanSwitch.SelectionChanged += delegate { AppSettings.OverlayShowFan = fanSwitch.SelectedIndex == 0; AppSettings.MarkChanged(); };
@@ -88,6 +90,7 @@ namespace OmenHub.Ui.Pages
             cpuSwitch.SelectedIndex = AppSettings.OverlayShowCpu ? 0 : 1;
             gpuSwitch.SelectedIndex = AppSettings.OverlayShowGpu ? 0 : 1;
             ramSwitch.SelectedIndex = AppSettings.OverlayShowRam ? 0 : 1;
+            fpsSwitch.SelectedIndex = AppSettings.OverlayShowFps ? 0 : 1;
             temperatureSwitch.SelectedIndex = AppSettings.OverlayShowTemperature ? 0 : 1;
             powerSwitch.SelectedIndex = AppSettings.OverlayShowPower ? 0 : 1;
             fanSwitch.SelectedIndex = AppSettings.OverlayShowFan ? 0 : 1;

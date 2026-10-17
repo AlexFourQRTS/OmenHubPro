@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using OmenHub.Core.Settings;
 using OmenHub.Engine;
+using OmenHub.Hardware.Fps;
 using OmenHub.Hardware.Sensors;
 
 namespace OmenHub.Ui.Overlay
@@ -34,15 +35,21 @@ namespace OmenHub.Ui.Overlay
         {
             bool show = ShouldShow();
             CpuPackageSensor.Wanted = show && AppSettings.OverlayShowCpu && AppSettings.OverlayShowPower;
+            FpsCounter.Wanted = show && AppSettings.OverlayShowFps;
             if (!show) { if (window.Visible) window.Hide(); return; }
             Size size = OverlayPainter.MeasureSize(Scale);
             if (!window.Visible) window.Show();
             using (var bitmap = new Bitmap(size.Width, size.Height, PixelFormat.Format32bppArgb))
             {
                 using (Graphics graphics = Graphics.FromImage(bitmap))
-                    OverlayPainter.Paint(graphics, size, ControlEngine.Latest, Scale);
+                    OverlayPainter.Paint(graphics, size, ControlEngine.Latest, CurrentFps(), Scale);
                 window.Present(bitmap, Corner(size));
             }
+        }
+
+        private static int CurrentFps()
+        {
+            return AppSettings.OverlayShowFps ? FpsCounter.FramesPerSecond(GameDetector.ForegroundProcessId()) : -1;
         }
 
         private static Point Corner(Size size)

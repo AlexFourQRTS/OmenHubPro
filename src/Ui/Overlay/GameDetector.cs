@@ -21,6 +21,16 @@ namespace OmenHub.Ui.Overlay
         private static readonly string[] IgnoredClasses = { "Progman", "WorkerW", "Shell_TrayWnd", "ApplicationFrameWindow" };
         private static readonly string[] IgnoredProcesses = { "explorer", "OmenHub", "SearchHost", "ShellExperienceHost", "StartMenuExperienceHost" };
 
+        /// <summary>Process id of the window in the foreground (0 when none).</summary>
+        public static int ForegroundProcessId()
+        {
+            IntPtr window = GetForegroundWindow();
+            uint processId;
+            if (window == IntPtr.Zero) return 0;
+            GetWindowThreadProcessId(window, out processId);
+            return (int)processId;
+        }
+
         public static bool IsGameInForeground()
         {
             IntPtr window = GetForegroundWindow();

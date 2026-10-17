@@ -28,12 +28,12 @@ namespace OmenHub.Ui.Shell
             catch (Exception error) { AppLog.Write("OMEN key listener FAILED: " + error.Message); }
         }
 
-        private void OnBiosEvent(object sender, EventArrivedEventArgs e)
+        private void OnBiosEvent(object sender, EventArrivedEventArgs eventArgs)
         {
-            if (Convert.ToInt32(e.NewEvent["EventID"]) != OmenKeyEventId) return;
+            if (Convert.ToInt32(eventArgs.NewEvent["EventID"]) != OmenKeyEventId) return;
             if ((DateTime.Now - lastPress).TotalMilliseconds < DebounceMilliseconds) return;   // key held or bouncing
             lastPress = DateTime.Now;
-            AppLog.Write("OMEN key pressed (data=" + e.NewEvent["EventData"] + ")");
+            AppLog.Write("OMEN key pressed (data=" + eventArgs.NewEvent["EventData"] + ")");
             if (Pressed != null) Pressed(this, EventArgs.Empty);
         }
 

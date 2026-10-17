@@ -43,11 +43,11 @@ namespace OmenHub.Ui.Controls
             return new RectangleF((index % Columns) * (cellWidth + Gap), (index / Columns) * (CellHeight + Gap), cellWidth, CellHeight);
         }
 
-        protected override void OnMouseDown(MouseEventArgs e)
+        protected override void OnMouseDown(MouseEventArgs eventArgs)
         {
             for (int index = 0; index < items.Length; index++)
             {
-                if (!CellOf(index).Contains(e.X, e.Y)) continue;
+                if (!CellOf(index).Contains(eventArgs.X, eventArgs.Y)) continue;
                 selectedIndex = index;
                 Invalidate();
                 if (SelectionChanged != null) SelectionChanged(this, EventArgs.Empty);
@@ -55,18 +55,18 @@ namespace OmenHub.Ui.Controls
             }
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
             for (int index = 0; index < items.Length; index++)
             {
                 RectangleF cell = CellOf(index);
                 bool selected = index == selectedIndex;
                 using (var path = UiDrawing.RoundedRectangle(cell, 8))
                 using (var brush = new SolidBrush(selected ? Palette.Accent : Palette.Track))
-                    e.Graphics.FillPath(brush, path);
-                TextRenderer.DrawText(e.Graphics, items[index], UiDrawing.GetFont(9, selected), Rectangle.Round(cell),
+                    eventArgs.Graphics.FillPath(brush, path);
+                TextRenderer.DrawText(eventArgs.Graphics, items[index], UiDrawing.GetFont(9, selected), Rectangle.Round(cell),
                     selected ? Color.White : Palette.Text,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             }

@@ -31,14 +31,14 @@ namespace OmenHub.Ui.Controls
             return (float)(TopMargin + (1 - rpm / MaximumRpm) * (Height - TopMargin - BottomMargin));
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs eventArgs)
         {
-            UiDrawing.SetHighQuality(e.Graphics);
-            if (Parent != null) e.Graphics.Clear(Parent.BackColor);
-            PaintGrid(e.Graphics);
-            PaintAlertZone(e.Graphics);
-            PaintCurrentTemperature(e.Graphics);
-            PaintCurve(e.Graphics);
+            UiDrawing.SetHighQuality(eventArgs.Graphics);
+            if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
+            PaintGrid(eventArgs.Graphics);
+            PaintAlertZone(eventArgs.Graphics);
+            PaintCurrentTemperature(eventArgs.Graphics);
+            PaintCurve(eventArgs.Graphics);
         }
 
         private void PaintGrid(Graphics graphics)
@@ -73,9 +73,9 @@ namespace OmenHub.Ui.Controls
         private void PaintCurrentTemperature(Graphics graphics)
         {
             if (CurrentTemperature < MinimumTemperature) return;
-            float x = XOf(Math.Min(CurrentTemperature, MaximumTemperature));
+            float markerX = XOf(Math.Min(CurrentTemperature, MaximumTemperature));
             using (var marker = new Pen(Palette.AccentSecondary, 1.5f) { DashStyle = DashStyle.Dash })
-                graphics.DrawLine(marker, x, TopMargin, x, Height - BottomMargin);
+                graphics.DrawLine(marker, markerX, TopMargin, markerX, Height - BottomMargin);
         }
 
         private void PaintCurve(Graphics graphics)

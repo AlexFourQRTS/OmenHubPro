@@ -49,7 +49,7 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("OverlayFill=" + AppSettings.OverlayFillOpacityPercent);
                 text.AppendLine("OverlayText=" + AppSettings.OverlayTextOpacityPercent);
                 text.AppendLine("OverlayColor=" + AppSettings.OverlayColor[0] + "," + AppSettings.OverlayColor[1] + "," + AppSettings.OverlayColor[2]);
-                text.AppendLine("OverlayRows=" + (AppSettings.OverlayShowCpu ? 1 : 0) + (AppSettings.OverlayShowGpu ? 1 : 0) + (AppSettings.OverlayShowRam ? 1 : 0)
+                text.AppendLine("OverlayRows=" + (AppSettings.OverlayShowCpu ? 1 : 0) + (AppSettings.OverlayShowGpu ? 1 : 0) + (AppSettings.OverlayShowRam ? 1 : 0) + (AppSettings.OverlayShowFps ? 1 : 0)
                     + (AppSettings.OverlayShowTemperature ? 1 : 0) + (AppSettings.OverlayShowPower ? 1 : 0) + (AppSettings.OverlayShowFan ? 1 : 0));
                 text.AppendLine("OverlayPos=" + (int)AppSettings.OverlayPosition);
                 text.AppendLine("OverlayScale=" + AppSettings.OverlayScalePercent);
@@ -116,14 +116,16 @@ namespace OmenHub.Core.Settings
                 if (channels.Length == 3 && byte.TryParse(channels[0], out red) && byte.TryParse(channels[1], out green) && byte.TryParse(channels[2], out blue))
                     AppSettings.OverlayColor = new[] { red, green, blue };
             }
-            if (values.TryGetValue("OverlayRows", out rowsText) && rowsText.Length == 6)
+            if (values.TryGetValue("OverlayRows", out rowsText) && (rowsText.Length == 6 || rowsText.Length == 7))
             {
                 AppSettings.OverlayShowCpu = rowsText[0] == '1';
                 AppSettings.OverlayShowGpu = rowsText[1] == '1';
                 AppSettings.OverlayShowRam = rowsText[2] == '1';
-                AppSettings.OverlayShowTemperature = rowsText[3] == '1';
-                AppSettings.OverlayShowPower = rowsText[4] == '1';
-                AppSettings.OverlayShowFan = rowsText[5] == '1';
+                int shift = rowsText.Length == 7 ? 1 : 0;   // the 7-character form has the FPS flag after memory
+                if (shift == 1) AppSettings.OverlayShowFps = rowsText[3] == '1';
+                AppSettings.OverlayShowTemperature = rowsText[3 + shift] == '1';
+                AppSettings.OverlayShowPower = rowsText[4 + shift] == '1';
+                AppSettings.OverlayShowFan = rowsText[5 + shift] == '1';
             }
         }
 

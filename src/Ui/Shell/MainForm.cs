@@ -104,11 +104,11 @@ namespace OmenHub.Ui.Shell
             Close();
         }
 
-        private void OnFormClosing(object sender, FormClosingEventArgs e)
+        private void OnFormClosing(object sender, FormClosingEventArgs eventArgs)
         {
-            if (!exitRequested && e.CloseReason == CloseReason.UserClosing)
+            if (!exitRequested && eventArgs.CloseReason == CloseReason.UserClosing)
             {
-                e.Cancel = true;
+                eventArgs.Cancel = true;
                 Hide();
                 if (!trayHintShown)
                 {

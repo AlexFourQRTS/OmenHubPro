@@ -19,13 +19,10 @@ namespace OmenHub.Ui.Pages
             PageKit.MakeLabel(this, "Профиль мощности", 20, 14, 11, true, PageKit.RoleText);
             proAutoSegments = PageKit.MakeSegments(this, 20, 50, 340,
                 new[] { "Вручную", "Про авто (CPU " + AppSettings.ProAutoWatts + " Вт)" }, AppSettings.ProAutoEnabled ? 1 : 0);
-            PageKit.MakeLabel(this, "Про авто: процессор держится на " + AppSettings.ProAutoWatts
-                + " Вт — лучший баланс: ≈6100 очков против ≈6800 на 75 Вт.", 376, 58, 8.5f, false, PageKit.RoleSub);
 
             PageKit.MakeLabel(this, "От батареи", 20, 100, 9.5f, false, PageKit.RoleSub);
             batterySegments = PageKit.MakeSegments(this, 140, 94, 340,
-                new[] { "Без изменений", "CPU " + AppSettings.BatteryWatts + " Вт (экономия)" }, AppSettings.BatteryEcoEnabled ? 1 : 0);
-            PageKit.MakeLabel(this, "Включается сам при отключении зарядки и снимается при подключении.", 496, 102, 8.5f, false, PageKit.RoleSub);
+                new[] { "Без изменений", "CPU " + AppSettings.BatteryWatts + " / GPU " + AppSettings.BatteryGpuWatts + " Вт (экономия)" }, AppSettings.BatteryEcoEnabled ? 1 : 0);
 
             proAutoSegments.SelectionChanged += delegate { OnProAutoChosen(); };
             batterySegments.SelectionChanged += delegate { OnBatteryChosen(); };

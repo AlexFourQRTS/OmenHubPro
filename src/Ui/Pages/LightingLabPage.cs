@@ -25,8 +25,6 @@ namespace OmenHub.Ui.Pages
         {
             Controls.Add(new LampRangeCard());
             CardPanel card = PageKit.MakeCard(this, 24, 182, 802, 440, "Подсветка: лаборатория вариантов");
-            PageKit.MakeLabel(card, "Лаборатория: пробуй варианты и скажи, какие сработали. Основное приложение при этом тоже держит подсветку, так что результат может смешиваться.",
-                20, 42, 9, false, PageKit.RoleSub);
 
             List<LightingVariant> variants = LightingVariantCatalog.Build();
             for (int index = 0; index < variants.Count; index++)

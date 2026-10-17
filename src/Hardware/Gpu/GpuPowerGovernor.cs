@@ -54,14 +54,15 @@ namespace OmenHub.Hardware.Gpu
                 if (gpu == null) { gpu = NvmlGpu.TryOpen(); if (gpu == null) { Thread.Sleep(RetryMilliseconds); continue; } }
                 MeasuredWatts = gpu.ReadPowerWatts();
 
-                if (!AppSettings.GpuLimitEnabled)
+                int targetWatts = TargetWatts();
+                if (targetWatts <= 0)
                 {
                     if (appliedCap != 0) { gpu.UnlockClocks(); appliedCap = 0; LockedCapMhz = 0; AppLog.Write("GPU governor: unlocked"); }
                     cap = MaximumCapMhz;
                 }
                 else
                 {
-                    cap = NextCap(cap, MeasuredWatts, AppSettings.GpuWatts, gpu);
+                    cap = NextCap(cap, MeasuredWatts, targetWatts, gpu);
                     if (Math.Abs(cap - appliedCap) >= MinimumChangeMhz && gpu.LockClocks(MinimumClockMhz, (int)cap))
                     {
                         appliedCap = (int)cap;
@@ -71,6 +72,16 @@ namespace OmenHub.Hardware.Gpu
                 Thread.Sleep(LoopMilliseconds);
             }
             if (gpu != null) { gpu.UnlockClocks(); gpu.Dispose(); AppLog.Write("GPU governor: clocks unlocked on exit"); }
+        }
+
+        /// <summary>The target in watts: the battery economy profile wins on battery, otherwise the user limit (0 = no limit).</summary>
+        private static int TargetWatts()
+        {
+            bool onBattery;
+            try { onBattery = System.Windows.Forms.SystemInformation.PowerStatus.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Offline; }
+            catch { onBattery = false; }
+            if (onBattery && AppSettings.BatteryEcoEnabled) return AppSettings.BatteryGpuWatts;
+            return AppSettings.GpuLimitEnabled ? AppSettings.GpuWatts : 0;
         }
 
         /// <summary>Proportional step: lower the cap fast when over the target, raise it slowly when there is headroom.</summary>

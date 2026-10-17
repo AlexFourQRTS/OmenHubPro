@@ -23,8 +23,6 @@ namespace OmenHub.Ui.Pages
         public OverlayPage()
         {
             CardPanel card = PageKit.MakeCard(this, 24, 16, 802, 600, "Оверлей в играх");
-            PageKit.MakeLabel(card, "Окно поверх игры. Ничего не внедряется в игру, античиты не мешают. Включается и выключается в Настройках.",
-                20, 38, 8.5f, false, PageKit.RoleSub);
 
             PageKit.MakeLabel(card, "Показывать", 20, 78, 9.5f, false, PageKit.RoleSub);
             modeSegments = PageKit.MakeSegments(card, 160, 72, 330, new[] { "Только в играх", "Всегда" }, (int)AppSettings.Overlay - 1);
@@ -53,7 +51,6 @@ namespace OmenHub.Ui.Pages
             temperatureSwitch = MakeSwitch(card, 160, 454, "Температура");
             powerSwitch = MakeSwitch(card, 330, 454, "Мощность");
             fanSwitch = MakeSwitch(card, 500, 454, "Обороты кулера");
-            PageKit.MakeLabel(card, "FPS добавим отдельным шагом.", 20, 540, 8.5f, false, PageKit.RoleSub);
             WireEvents();
             LoadFromSettings();
         }

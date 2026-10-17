@@ -14,6 +14,7 @@ namespace OmenHub.Core.Settings
     {
         public const int ProAutoWatts = 40;
         public const int BatteryWatts = 20;
+        public const int BatteryGpuWatts = 30;   // GPU limit while on battery (with the battery economy profile)
         public const int MinimumCpuWatts = 20;
         public const int MaximumCpuWatts = 75;
         public const int CpuWattsStep = 5;

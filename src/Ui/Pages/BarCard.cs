@@ -19,7 +19,6 @@ namespace OmenHub.Ui.Pages
             Left = 24; Top = 388; Width = 802; Height = 232;
             PageKit.MakeLabel(this, "Нижняя панель", 20, 12, 11, true, PageKit.RoleText);
             enabledSegments = PageKit.MakeSegments(this, 470, 6, 310, new[] { "Включена", "Выключена" }, AppSettings.BarEnabled ? 0 : 1);
-            PageKit.MakeLabel(this, "Выключение идёт через BIOS и не трогает клавиатуру. Четыре зоны слева направо.", 20, 34, 8.5f, false, PageKit.RoleSub);
             for (int zone = 0; zone < columns.Length; zone++)
                 columns[zone] = new BarZoneColumn(this, zone, 20 + zone * ColumnSpacing);
 

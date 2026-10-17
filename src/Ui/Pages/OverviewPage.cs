@@ -26,8 +26,6 @@ namespace OmenHub.Ui.Pages
             BuildFanCards();
             BuildTemperatureCard();
             BuildLoadCard();
-            PageKit.MakeLabel(this, "Датчик CPU напрямую пока недоступен; «Система» — самый горячий из ACPI-зон и BIOS-датчика.",
-                24, 400, 8.5f, false, PageKit.RoleSub);
         }
 
         private void BuildFanCards()

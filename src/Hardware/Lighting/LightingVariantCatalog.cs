@@ -33,6 +33,10 @@ namespace OmenHub.Hardware.Lighting
                 () => BiosKeyboardPainter.DumpColorTable());
             Add(variants, "Диагностика HID: прочитать отчёты клавиатуры",
                 () => HidDiagnostics.ReadFeatureReports());
+            Add(variants, "HID напрямую: вся клавиатура жёлтый/синий/белый",
+                () => DirectLampExperiments.StrobeWholeKeyboard());
+            Add(variants, "HID напрямую: радуга по каждой клавише",
+                () => DirectLampExperiments.RainbowPerKey());
             Add(variants, "Закрыть фон OMEN, затем BIOS: 4 зоны RGB",
                 () => OmenBackgroundControl.StopOmenBackground() + "; " + BiosKeyboardPainter.StrobeZones(false, 2));
             return variants;

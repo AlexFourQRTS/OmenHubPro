@@ -1,0 +1,23 @@
+﻿page=0xFF01 usage=0x1 in=65 out=65 feat=9
+   \\?\hid#vid_0d62&pid_54bf&mi_03#8&34e66d1&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+page=0x1 usage=0x2 in=8 out=0 feat=0
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col01#8&167e830f&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+page=0xC usage=0x1 in=3 out=0 feat=0
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col02#8&167e830f&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+page=0xFF02 usage=0x1 in=4 out=0 feat=0
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col03#8&167e830f&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+page=0x1 usage=0xC in=2 out=0 feat=0
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col04#8&167e830f&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}
+page=0x1 usage=0x6 in=31 out=0 feat=0
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col05#8&167e830f&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd
+page=0x1 usage=0x6 in=9 out=2 feat=0
+   \\?\hid#vid_0d62&pid_54bf&mi_01#8&29ae9f4d&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd
+page=0xFF00 usage=0x1 in=65 out=65 feat=65
+   \\?\hid#vid_0d62&pid_54bf&mi_00#8&143f184&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+page=0x59 usage=0x1 in=0 out=0 feat=51
+   \\?\hid#vid_0d62&pid_54bf&mi_04#8&2bb9149a&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+
+page=0xFF01 feat=9 (отчёты не отвечают)
+page=0xFF00 feat=65 (отчёты не отвечают)
+page=0x59 feat=51 id1:01-78-00-F0-37-05-00-48-E8-01-00-E8 id3:03-4E-00-C0-C2-04-00-30-F2-00-00-00
+

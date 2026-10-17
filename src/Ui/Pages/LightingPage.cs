@@ -23,7 +23,8 @@ namespace OmenHub.Ui.Pages
 
         public LightingPage()
         {
-            CardPanel card = PageKit.MakeCard(this, 24, 16, 802, 604, "Подсветка: лаборатория вариантов");
+            Controls.Add(new LampRangeCard());
+            CardPanel card = PageKit.MakeCard(this, 24, 182, 802, 440, "Подсветка: лаборатория вариантов");
             PageKit.MakeLabel(card, "Жми вариант и смотри на ноутбук (клавиатура, планка, логотип). Скажи мне номера, которые сработали.",
                 20, 42, 9, false, PageKit.RoleSub);
 
@@ -34,7 +35,7 @@ namespace OmenHub.Ui.Pages
             int rows = (variants.Count + 1) / 2;
             resultBox = new TextBox
             {
-                Left = 20, Top = 76 + rows * RowHeight + 10, Width = 762, Height = 604 - (76 + rows * RowHeight + 10) - 20,
+                Left = 20, Top = 76 + rows * RowHeight + 10, Width = 762, Height = 440 - (76 + rows * RowHeight + 10) - 16,
                 Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical,
                 Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None
             };

@@ -150,7 +150,7 @@ namespace OmenHub
         public static bool SetFanLevel(int cpuRpm, int gpuRpm)
         {
             byte[] d;
-            return Call(D, 0x2E, new byte[] { (byte)Math.Max(0, Math.Min(44, cpuRpm / 100)), (byte)Math.Max(0, Math.Min(44, gpuRpm / 100)), 0, 0 }, 4, out d);
+            return Call(D, 0x2E, new byte[] { (byte)Math.Max(0, Math.Min(60, cpuRpm / 100)), (byte)Math.Max(0, Math.Min(60, gpuRpm / 100)), 0, 0 }, 4, out d);
         }
         // FanMax=false also hands fan control back to the BIOS
         public static bool SetFanMax(bool on)

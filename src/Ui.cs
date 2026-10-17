@@ -182,7 +182,7 @@ namespace OmenHub
     {
         public int[] T = new int[0], R = new int[0]; public double Now = -1;
         public event EventHandler Edited; int drag = -1;
-        const int X0 = 56, Y0 = 12, MinT = 30, MaxT = 100, MaxR = 4400;
+        const int X0 = 56, Y0 = 12, MinT = 30, MaxT = 100, MaxR = 6000;
         public Curve() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true); }
         float PX(double t) { return (float)(X0 + (t - MinT) / (MaxT - MinT) * (Width - X0 - 16)); }
         float PY(double r) { return (float)(Y0 + (1 - r / MaxR) * (Height - Y0 - 30)); }
@@ -192,7 +192,7 @@ namespace OmenHub
             if (Parent != null) g.Clear(Parent.BackColor);
             using (var pen = new Pen(Th.Border)) using (var br = new SolidBrush(Th.Sub))
             {
-                for (int r = 0; r <= MaxR; r += 1100)
+                for (int r = 0; r <= MaxR; r += 1500)
                 {
                     g.DrawLine(pen, X0, PY(r), Width - 16, PY(r));
                     TextRenderer.DrawText(g, r.ToString(), Th.F(8, false), new Rectangle(0, (int)PY(r) - 8, X0 - 6, 16), Th.Sub, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);

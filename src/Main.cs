@@ -160,8 +160,8 @@ namespace OmenHub
 
             var r = MkCard(pg, 24, 132, 802, 150, "Ручные обороты");
             Lb(r, "Кулер CPU", 20, 54, 9.5f, false, "sub"); Lb(r, "Кулер GPU", 20, 100, 9.5f, false, "sub");
-            slCpu = new Slider { Left = 110, Top = 48, Width = 560, Min = 0, Max = 4400, Step = 100, Value = Cfg.ManCpu }; r.Controls.Add(slCpu);
-            slGpu = new Slider { Left = 110, Top = 94, Width = 560, Min = 0, Max = 4400, Step = 100, Value = Cfg.ManGpu }; r.Controls.Add(slGpu);
+            slCpu = new Slider { Left = 110, Top = 48, Width = 560, Min = 0, Max = 6000, Step = 100, Value = Cfg.ManCpu }; r.Controls.Add(slCpu);
+            slGpu = new Slider { Left = 110, Top = 94, Width = 560, Min = 0, Max = 6000, Step = 100, Value = Cfg.ManGpu }; r.Controls.Add(slGpu);
             lSlCpu = new Label { Left = 690, Top = 50, Width = 100, Height = 24, Font = Th.F(10.5f, true), Tag = "text", BackColor = Color.Transparent, TextAlign = ContentAlignment.MiddleRight }; r.Controls.Add(lSlCpu);
             lSlGpu = new Label { Left = 690, Top = 96, Width = 100, Height = 24, Font = Th.F(10.5f, true), Tag = "text", BackColor = Color.Transparent, TextAlign = ContentAlignment.MiddleRight }; r.Controls.Add(lSlGpu);
             slCpu.Changed += delegate { Cfg.ManCpu = slCpu.Value; SlText(); dirty = true; };
@@ -186,7 +186,7 @@ namespace OmenHub
         void SlText() { lSlCpu.Text = slCpu.Value + " об/мин"; lSlGpu.Text = slGpu.Value + " об/мин"; }
         void ModeText()
         {
-            string[] t = { "BIOS сам управляет вентиляторами.", "Оба кулера на максимум (~4400).", "Фиксированные обороты из ползунков.", "Обороты по кривым ниже." };
+            string[] t = { "BIOS сам управляет вентиляторами.", "Оба кулера на максимум (BIOS).", "Фиксированные обороты из ползунков.", "Обороты по кривым ниже." };
             modeInfo.Text = t[Cfg.FanMode] + "\nЗащита: ≥85 °C — не ниже 3600, ≥95 °C — максимум.";
         }
 
@@ -254,8 +254,8 @@ namespace OmenHub
             status.Text = s.Status + "    |    режим: " + segMode.Items[Cfg.FanMode];
             if (!pages[0].Visible && !pages[1].Visible) return;
 
-            lFanCpu.Text = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; bFanCpu.V = Math.Max(0, s.FanCpu) / 4400.0; bFanCpu.Invalidate();
-            lFanGpu.Text = s.FanGpu < 0 ? "—" : s.FanGpu + " об/мин"; bFanGpu.V = Math.Max(0, s.FanGpu) / 4400.0; bFanGpu.Invalidate();
+            lFanCpu.Text = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; bFanCpu.V = Math.Max(0, s.FanCpu) / 6000.0; bFanCpu.Invalidate();
+            lFanGpu.Text = s.FanGpu < 0 ? "—" : s.FanGpu + " об/мин"; bFanGpu.V = Math.Max(0, s.FanGpu) / 6000.0; bFanGpu.Invalidate();
             Set(vSys, bSys, s.SysTemp < 0 ? "—" : s.SysTemp + " °C", s.SysTemp / 100.0, Heat(s.SysTemp));
             Set(vBios, bBios, s.BiosTemp < 0 ? "—" : s.BiosTemp + " °C", s.BiosTemp / 100.0, Heat(s.BiosTemp));
             Set(vGpuT, bGpuT, s.GpuTemp < 0 ? "—" : s.GpuTemp + " °C", s.GpuTemp / 100.0, Heat(s.GpuTemp));

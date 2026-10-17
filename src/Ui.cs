@@ -219,7 +219,6 @@ namespace OmenHub
             if (drag >= 0)
                 TextRenderer.DrawText(g, T[drag] + "° → " + R[drag] + " об/мин", Th.F(9, true), new Rectangle((int)pts[drag].X - 70, (int)pts[drag].Y - 30, 140, 18), Th.Text, TextFormatFlags.HorizontalCenter);
         }
-        protected override void OnMouseDown(MouseEventArgs e)
         protected override void OnMouseDoubleClick(MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left || T.Length >= 12) return;
@@ -242,6 +241,7 @@ namespace OmenHub
             nt.RemoveAt(best); nr.RemoveAt(best);
             T = nt.ToArray(); R = nr.ToArray(); Invalidate(); if (Edited != null) Edited(this, EventArgs.Empty);
         }
+        protected override void OnMouseDown(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right) { RemoveNear(e.X, e.Y); return; }
             drag = -1; double best = 14 * 14;
@@ -265,6 +265,22 @@ namespace OmenHub
         protected override void OnMouseUp(MouseEventArgs e)
         {
             if (drag >= 0) { drag = -1; Capture = false; Invalidate(); if (Edited != null) Edited(this, EventArgs.Empty); }
+        }
+    }
+
+    class Chip : Control
+    {
+        public string Title = "", Value = "—"; public bool Alert;
+        public Chip() { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true); Width = 170; Height = 48; }
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics; Th.Quality(g);
+            if (Parent != null) g.Clear(Parent.BackColor);
+            var r = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
+            using (var p = Th.RR(r, 10)) using (var b = new SolidBrush(Th.Card)) using (var pen = new Pen(Alert ? Th.Bad : Th.Border)) { g.FillPath(b, p); g.DrawPath(pen, p); }
+            using (var b = new SolidBrush(Alert ? Th.Bad : Th.Accent2)) g.FillRectangle(b, 0, 12, 3, Height - 24);
+            TextRenderer.DrawText(g, Title, Th.F(8, false), new Rectangle(14, 5, Width - 20, 16), Th.Sub, TextFormatFlags.Left);
+            TextRenderer.DrawText(g, Value, Th.F(13, true), new Rectangle(14, 20, Width - 20, 26), Alert ? Th.Bad : Th.Text, TextFormatFlags.Left);
         }
     }
 }

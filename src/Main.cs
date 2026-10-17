@@ -29,7 +29,7 @@ namespace OmenHub
 
     class MainForm : Form
     {
-        Panel side, head; Label title, brand, status;
+        Panel side, head; Label title, brand, status; Chip chipCpu, chipGpu;
         Panel[] pages = new Panel[5]; Nav[] navs = new Nav[5];
         string[] names = { "Обзор", "Вентиляторы", "Мощность", "Подсветка", "Настройки" };
         System.Windows.Forms.Timer tm = new System.Windows.Forms.Timer();
@@ -56,6 +56,10 @@ namespace OmenHub
             Lb(side, "OMEN MAX 16", 26, 54, 8.5f, false, "sub");
             title = Lb(head, "", 28, 16, 17, true, "text");
             status = Lb(head, "", 28, 44, 8.5f, false, "sub");
+            chipCpu = new Chip { Title = "КУЛЕР CPU", Left = head.Width - 370, Top = 8, Anchor = AnchorStyles.Top | AnchorStyles.Right }; head.Controls.Add(chipCpu);
+            chipGpu = new Chip { Title = "КУЛЕР GPU", Left = head.Width - 186, Top = 8, Anchor = AnchorStyles.Top | AnchorStyles.Right }; head.Controls.Add(chipGpu);
+            EventHandler place = delegate { chipCpu.Left = head.Width - 370; chipGpu.Left = head.Width - 186; };
+            head.Resize += place; Load += place;
             // remove status from header height: keep tiny
             for (int i = 0; i < names.Length; i++)
             {
@@ -123,7 +127,7 @@ namespace OmenHub
                 string r = l.Tag as string;
                 l.ForeColor = r == "sub" ? Th.Sub : r == "accent" ? Th.Accent : Th.Text;
             }
-            else if (c is Nav || c is Btn || c is Seg || c is Slider || c is Bar || c is Curve) { if (c.Parent != null) c.BackColor = c.Parent.BackColor; c.Invalidate(); }
+            else if (c is Nav || c is Btn || c is Seg || c is Slider || c is Bar || c is Curve || c is Chip) { if (c.Parent != null) c.BackColor = c.Parent.BackColor; c.Invalidate(); }
             foreach (Control ch in c.Controls) Recolor(ch);
         }
 
@@ -192,7 +196,7 @@ namespace OmenHub
         void ModeText()
         {
             string[] t = { "BIOS сам управляет вентиляторами.", "Оба кулера на максимум (BIOS).", "Фиксированные обороты из ползунков.", "Обороты по кривым ниже." };
-            modeInfo.Text = t[Cfg.FanMode] + "\nЗащита: ≥85 °C — не ниже 3600, ≥95 °C — максимум.";
+            modeInfo.Text = t[Cfg.FanMode] + "\nЗащита: ≥80 °C — оба кулера на максимум (нельзя отключить).";
         }
 
         void BuildPower(Panel pg)
@@ -333,6 +337,8 @@ namespace OmenHub
             var s = Engine.S;
             status.Text = s.Status + "    |    режим: " + segMode.Items[Cfg.FanMode];
             status.ForeColor = s.Alert ? Th.Bad : Th.Sub; status.Font = Th.F(8.5f, s.Alert);
+            chipCpu.Value = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; chipGpu.Value = s.FanGpu < 0 ? "—" : s.FanGpu + " об/мин";
+            chipCpu.Alert = chipGpu.Alert = s.Alert; chipCpu.Invalidate(); chipGpu.Invalidate();
             if (!pages[0].Visible && !pages[1].Visible) return;
 
             lFanCpu.Text = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; bFanCpu.V = Math.Max(0, s.FanCpu) / 6000.0; bFanCpu.Invalidate();

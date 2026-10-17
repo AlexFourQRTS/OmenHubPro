@@ -16,9 +16,9 @@ namespace OmenHub.Ui.Pages
         private readonly Label liveLabel;
         private readonly Label biosLabel;
 
-        public GpuPowerCard()
+        public GpuPowerCard(int top)
         {
-            Left = 24; Top = 168; Width = 802; Height = 124;
+            Left = 24; Top = top; Width = 802; Height = 124;
             PageKit.MakeLabel(this, "GPU power", 20, 12, 11, true, PageKit.RoleText);
             limitSegments = PageKit.MakeSegments(this, 20, 42, 220, new[] { "Без лимита", "Лимит" }, AppSettings.GpuLimitEnabled ? 1 : 0);
             wattsSlider = PageKit.MakeSlider(this, 260, 46, 420, AppSettings.MinimumGpuWatts, AppSettings.MaximumGpuWatts,

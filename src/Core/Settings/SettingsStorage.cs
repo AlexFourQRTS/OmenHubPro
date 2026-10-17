@@ -36,6 +36,7 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("SrcCpu=" + (int)AppSettings.CpuCurveSource);
                 text.AppendLine("SrcGpu=" + (int)AppSettings.GpuCurveSource);
                 text.AppendLine("CpuW=" + AppSettings.CpuWatts);
+                text.AppendLine("CpuLimit=" + (AppSettings.CpuLimitEnabled ? 1 : 0));
                 text.AppendLine("ProAuto=" + (AppSettings.ProAutoEnabled ? 1 : 0));
                 text.AppendLine("BatteryEco=" + (AppSettings.BatteryEcoEnabled ? 1 : 0));
                 text.AppendLine("BarZones=" + BarZoneStorage.Serialize());
@@ -73,6 +74,7 @@ namespace OmenHub.Core.Settings
                 AppSettings.CpuCurveSource = (TemperatureSource)ReadNumber(values, "SrcCpu", (int)AppSettings.CpuCurveSource);
                 AppSettings.GpuCurveSource = (TemperatureSource)ReadNumber(values, "SrcGpu", (int)AppSettings.GpuCurveSource);
                 AppSettings.CpuWatts = ReadNumber(values, "CpuW", AppSettings.CpuWatts);
+                AppSettings.CpuLimitEnabled = ReadNumber(values, "CpuLimit", 0) == 1;
                 AppSettings.ProAutoEnabled = ReadNumber(values, "ProAuto", 1) == 1;
                 AppSettings.BatteryEcoEnabled = ReadNumber(values, "BatteryEco", 1) == 1;
                 AppSettings.BarEnabled = ReadNumber(values, "BarOn", 1) == 1;

@@ -4,48 +4,47 @@ using OmenHub.Ui.Controls;
 
 namespace OmenHub.Ui.Pages
 {
-    /// <summary>Card with the automatic CPU profiles: "Pro auto" on AC and the economy limit on battery.</summary>
+    /// <summary>
+    /// One automatic power profile: "Профиль мощности: от сети" (Pro auto, CPU 40 W) or "от батареи" (economy,
+    /// CPU 20 W and GPU 30 W). The two cards share this class and differ only in what they switch.
+    /// </summary>
     public sealed class PowerProfileCard : CardPanel
     {
-        private readonly SegmentedControl proAutoSegments;
-        private readonly SegmentedControl batterySegments;
+        private readonly bool forBattery;
+        private readonly SegmentedControl segments;
 
         /// <summary>Raised when a profile was switched, so the CPU card can refresh its slider.</summary>
         public event EventHandler ProfileChanged;
 
-        public PowerProfileCard()
+        public PowerProfileCard(bool forBattery, int top)
         {
-            Left = 24; Top = 16; Width = 802; Height = 140;
-            PageKit.MakeLabel(this, "Профиль мощности", 20, 14, 11, true, PageKit.RoleText);
-            proAutoSegments = PageKit.MakeSegments(this, 20, 50, 340,
-                new[] { "Вручную", "Про авто (CPU " + AppSettings.ProAutoWatts + " Вт)" }, AppSettings.ProAutoEnabled ? 1 : 0);
-
-            PageKit.MakeLabel(this, "От батареи", 20, 100, 9.5f, false, PageKit.RoleSub);
-            batterySegments = PageKit.MakeSegments(this, 140, 94, 340,
-                new[] { "Без изменений", "CPU " + AppSettings.BatteryWatts + " / GPU " + AppSettings.BatteryGpuWatts + " Вт (экономия)" }, AppSettings.BatteryEcoEnabled ? 1 : 0);
-
-            proAutoSegments.SelectionChanged += delegate { OnProAutoChosen(); };
-            batterySegments.SelectionChanged += delegate { OnBatteryChosen(); };
+            this.forBattery = forBattery;
+            Left = 24; Top = top; Width = 802; Height = 92;
+            PageKit.MakeLabel(this, forBattery ? "Профиль мощности: от батареи" : "Профиль мощности: от сети", 20, 12, 11, true, PageKit.RoleText);
+            string[] items = forBattery
+                ? new[] { "Без изменений", "Экономия: CPU " + AppSettings.BatteryWatts + " / GPU " + AppSettings.BatteryGpuWatts + " Вт" }
+                : new[] { "Вручную", "Про авто: CPU " + AppSettings.ProAutoWatts + " Вт" };
+            segments = PageKit.MakeSegments(this, 20, 42, 460, items, 0);
+            segments.SelectionChanged += delegate { OnChosen(); };
+            LoadFromSettings();
         }
 
         public void LoadFromSettings()
         {
-            proAutoSegments.SelectedIndex = AppSettings.ProAutoEnabled ? 1 : 0;
-            batterySegments.SelectedIndex = AppSettings.BatteryEcoEnabled ? 1 : 0;
+            segments.SelectedIndex = (forBattery ? AppSettings.BatteryEcoEnabled : AppSettings.ProAutoEnabled) ? 1 : 0;
         }
 
-        private void OnProAutoChosen()
+        private void OnChosen()
         {
-            AppSettings.ProAutoEnabled = proAutoSegments.SelectedIndex == 1;
-            if (AppSettings.ProAutoEnabled) AppSettings.CpuWatts = AppSettings.ProAutoWatts;
+            bool enabled = segments.SelectedIndex == 1;
+            if (forBattery) AppSettings.BatteryEcoEnabled = enabled;
+            else
+            {
+                AppSettings.ProAutoEnabled = enabled;
+                if (enabled) AppSettings.CpuWatts = AppSettings.ProAutoWatts;
+            }
             AppSettings.MarkChanged();
             if (ProfileChanged != null) ProfileChanged(this, EventArgs.Empty);
-        }
-
-        private void OnBatteryChosen()
-        {
-            AppSettings.BatteryEcoEnabled = batterySegments.SelectedIndex == 1;
-            AppSettings.MarkChanged();
         }
     }
 }

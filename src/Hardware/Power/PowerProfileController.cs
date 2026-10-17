@@ -43,7 +43,7 @@ namespace OmenHub.Hardware.Power
         {
             if (onBattery && AppSettings.BatteryEcoEnabled) return AppSettings.BatteryWatts;
             if (AppSettings.ProAutoEnabled) return AppSettings.ProAutoWatts;
-            return NoTarget;
+            return AppSettings.CpuLimitEnabled ? AppSettings.CpuWatts : AppSettings.MaximumCpuWatts;
         }
     }
 }

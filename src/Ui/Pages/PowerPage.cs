@@ -1,18 +1,20 @@
 namespace OmenHub.Ui.Pages
 {
-    /// <summary>Power page: automatic profiles, GPU information and the CPU power limit.</summary>
+    /// <summary>Power page: the two automatic profiles (mains / battery), then GPU power and CPU power.</summary>
     public sealed class PowerPage : PageBase
     {
-        private readonly PowerProfileCard profileCard = new PowerProfileCard();
-        private readonly GpuPowerCard gpuCard = new GpuPowerCard();
-        private readonly CpuPowerCard cpuCard = new CpuPowerCard();
+        private readonly PowerProfileCard mainsCard = new PowerProfileCard(false, 16);
+        private readonly PowerProfileCard batteryCard = new PowerProfileCard(true, 120);
+        private readonly GpuPowerCard gpuCard = new GpuPowerCard(224);
+        private readonly CpuPowerCard cpuCard = new CpuPowerCard(360);
 
         public PowerPage()
         {
-            Controls.Add(profileCard);
+            Controls.Add(mainsCard);
+            Controls.Add(batteryCard);
             Controls.Add(gpuCard);
             Controls.Add(cpuCard);
-            profileCard.ProfileChanged += delegate { cpuCard.LoadFromSettings(); };
+            mainsCard.ProfileChanged += delegate { cpuCard.LoadFromSettings(); };
         }
 
         public override void ShowSnapshot(OmenHub.Hardware.Sensors.SensorSnapshot snapshot)
@@ -22,7 +24,8 @@ namespace OmenHub.Ui.Pages
 
         public override void LoadFromSettings()
         {
-            profileCard.LoadFromSettings();
+            mainsCard.LoadFromSettings();
+            batteryCard.LoadFromSettings();
             cpuCard.LoadFromSettings();
             gpuCard.LoadFromSettings();
         }

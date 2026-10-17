@@ -4,6 +4,7 @@ using OmenHub.Core.Logging;
 using OmenHub.Core.Settings;
 using OmenHub.Engine;
 using OmenHub.Hardware.Sensors;
+using OmenHub.Ui.Overlay;
 using OmenHub.Ui.Theme;
 
 namespace OmenHub.Ui.Shell
@@ -17,6 +18,7 @@ namespace OmenHub.Ui.Shell
         private readonly System.Windows.Forms.Timer refreshTimer = new System.Windows.Forms.Timer();
         private readonly TrayIcon trayIcon = new TrayIcon();
         private readonly OmenKeyListener omenKeyListener = new OmenKeyListener();
+        private readonly OverlayController overlay = new OverlayController();
         private bool exitRequested;
         private bool startHidden;
         private bool trayHintShown;
@@ -117,6 +119,7 @@ namespace OmenHub.Ui.Shell
             }
             SettingsStorage.Save();
             omenKeyListener.Dispose();
+            overlay.Dispose();
             trayIcon.Dispose();
         }
 

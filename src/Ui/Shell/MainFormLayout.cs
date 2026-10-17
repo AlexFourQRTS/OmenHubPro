@@ -19,7 +19,7 @@ namespace OmenHub.Ui.Shell
         private StatChip cpuFanChip, gpuFanChip;
         private PageBase[] pages;
         private NavButton[] navButtons;
-        private readonly string[] pageNames = { "Обзор", "Вентиляторы", "Мощность", "Подсветка", "Настройки", "Лаборатория" };
+        private readonly string[] pageNames = { "Обзор", "Вентиляторы", "Мощность", "Подсветка", "Оверлей", "Настройки", "Лаборатория" };
 
         private void BuildFrame()
         {
@@ -71,7 +71,7 @@ namespace OmenHub.Ui.Shell
             var settingsPage = new SettingsPage(this);
             settingsPage.FansHandedBack += delegate { ShowPage(currentPage); };
             settingsPage.LabVisibilityChanged += delegate { ApplyLabVisibility(); };
-            pages = new PageBase[] { new OverviewPage(), new FansPage(), new PowerPage(), new LightingPage(), settingsPage, new LightingLabPage() };
+            pages = new PageBase[] { new OverviewPage(), new FansPage(), new PowerPage(), new LightingPage(), new OverlayPage(), settingsPage, new LightingLabPage() };
             navButtons = new NavButton[pages.Length];
             for (int index = 0; index < pages.Length; index++)
             {

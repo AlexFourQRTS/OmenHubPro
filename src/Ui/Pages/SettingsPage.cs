@@ -12,7 +12,7 @@ namespace OmenHub.Ui.Pages
     {
         private readonly SegmentedControl themeSegments;
         private readonly SegmentedControl autostartSegments;
-        private SegmentedControl labSegments;
+        private SegmentedControl labSegments, overlaySegments;
         private readonly Label autostartResultLabel;
 
         /// <summary>Raised when the user switches the fan mode back to BIOS auto from here.</summary>
@@ -58,7 +58,11 @@ namespace OmenHub.Ui.Pages
 
         private void BuildExtrasCard()
         {
-            CardPanel extras = PageKit.MakeCard(this, 24, 478, 802, 96, "Дополнительно");
+            CardPanel extras = PageKit.MakeCard(this, 24, 478, 802, 140, "Дополнительно");
+            PageKit.MakeLabel(extras, "Оверлей в играх", 20, 100, 9.5f, false, PageKit.RoleSub);
+            overlaySegments = PageKit.MakeSegments(extras, 220, 94, 260, new[] { "Выключен", "Включён" }, AppSettings.OverlayEnabled ? 1 : 0);
+            PageKit.MakeLabel(extras, "Внешний вид оверлея — на вкладке «Оверлей».", 500, 102, 8.5f, false, PageKit.RoleSub);
+            overlaySegments.SelectionChanged += delegate { AppSettings.OverlayEnabled = overlaySegments.SelectedIndex == 1; AppSettings.MarkChanged(); };
             PageKit.MakeLabel(extras, "Лаборатория подсветки", 20, 52, 9.5f, false, PageKit.RoleSub);
             labSegments = PageKit.MakeSegments(extras, 220, 46, 260, new[] { "Выключена", "Включена" }, AppSettings.LabEnabled ? 1 : 0);
             PageKit.MakeLabel(extras, "Пронумерованные способы покраски и поиск ламп — для отладки; появляется в меню.", 500, 54, 8.5f, false, PageKit.RoleSub);
@@ -74,6 +78,7 @@ namespace OmenHub.Ui.Pages
         {
             themeSegments.SelectedIndex = AppSettings.DarkTheme ? 0 : 1;
             labSegments.SelectedIndex = AppSettings.LabEnabled ? 1 : 0;
+            overlaySegments.SelectedIndex = AppSettings.OverlayEnabled ? 1 : 0;
         }
 
         private void ChangeAutostart()

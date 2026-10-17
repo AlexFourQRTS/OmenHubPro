@@ -5,6 +5,10 @@ namespace OmenHub.Core.Settings
 
     public enum TemperatureSource { System = 0, Gpu = 1, Hottest = 2 }
 
+    public enum OverlayMode { Off = 0, Auto = 1, Always = 2 }
+
+    public enum OverlayCorner { TopLeft = 0, TopRight = 1, BottomLeft = 2, BottomRight = 3 }
+
     /// <summary>The single source of truth for user configuration. Persistence lives in SettingsStorage.</summary>
     public static class AppSettings
     {
@@ -33,6 +37,16 @@ namespace OmenHub.Core.Settings
         public const int GpuWattsStep = 5;
         public static volatile bool GpuLimitEnabled = false;
         public static volatile int GpuWatts = 80;
+
+        public static volatile bool OverlayEnabled = true;                    // master switch (Settings page)
+        public static volatile OverlayMode Overlay = OverlayMode.Auto;        // Auto = only while a game (full-screen app) is active
+        public static volatile OverlayCorner OverlayPosition = OverlayCorner.TopLeft;
+        public static volatile int OverlayScalePercent = 100;
+        public static volatile int OverlayFillOpacityPercent = 85;   // background panel
+        public static volatile int OverlayTextOpacityPercent = 100;  // text
+        public static byte[] OverlayColor = { 255, 138, 31 };
+        public static volatile bool OverlayShowCpu = true, OverlayShowGpu = true, OverlayShowRam = true;
+        public static volatile bool OverlayShowTemperature = true, OverlayShowPower = true, OverlayShowFan = true;
 
         public static ZoneLighting KeyboardLighting = new ZoneLighting();   // plain white by default
 

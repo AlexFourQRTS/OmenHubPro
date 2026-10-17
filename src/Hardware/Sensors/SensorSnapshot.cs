@@ -12,6 +12,9 @@ namespace OmenHub.Hardware.Sensors
         public int GpuUtilizationPercent = -1;
         public int CpuFrequencyMhz = -1;
         public double GpuPowerWatts = -1;
+        public int CpuTemperature = -1;
+        public double CpuPowerWatts = -1;
+        public double RamUsedGb = -1, RamTotalGb = -1;
         public double CpuLoadPercent = -1;
         public bool OnBattery;
         public bool ThermalAlertActive;

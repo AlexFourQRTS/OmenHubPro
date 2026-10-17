@@ -38,6 +38,7 @@ namespace OmenHub.Hardware.Sensors
             snapshot.SystemTemperature = (int)Math.Round(Math.Max(snapshot.BiosTemperature, hottestZone));
             cpuReader.ReadInto(snapshot);
             gpuReader.ReadInto(snapshot);
+            RamReader.ReadInto(snapshot);
             return snapshot;
         }
 

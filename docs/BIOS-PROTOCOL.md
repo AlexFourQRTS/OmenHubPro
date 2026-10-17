@@ -25,3 +25,11 @@ Reads return inconsistent data on this model; per-key lighting is HID (Darfon VI
 ## Other findings
 - `nvidia-smi -pl` is unsupported on this laptop (BIOS owns the GPU limit; NVML reports 5-140 W range).
 - Fans read 0 rpm in BIOS auto mode when cool (zero-RPM idle) — normal.
+
+## Keyboard lighting findings (OMEN MAX 16, HP Gaming Keyboard II, VID_0D62 PID_54BF)
+- BIOS colour table (command 0x20009, type 0x02 get / 0x03 set, 128 bytes): the keyboard is **4-zone RGB**.
+  Byte 25..36 = 4 zones x (R,G,B). Bytes 0..1 look like brightness. Writing the full table (read-modify-write) repaints the keyboard. VERIFIED visually.
+- Backlight switch: type 0x05, first payload byte 0xE4 = on, 0x64 = off.
+- Windows Dynamic Lighting (HID LampArray, usage page 0x59) exposes two arrays:
+  * `HID_DEVICE_SYSTEM_VHF` virtual device, 4 lamps in a row, 32 cm wide ("Scene") - opens and paints fine.
+  * the keyboard's own LampArray (MI_04) cannot be opened (WinRT async never completes), with or without the OMEN background process.

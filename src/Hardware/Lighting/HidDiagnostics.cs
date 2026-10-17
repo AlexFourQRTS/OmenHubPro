@@ -39,7 +39,7 @@ namespace OmenHub.Hardware.Lighting
                 {
                     byte[] buffer = new byte[hidInterface.FeatureLength];
                     buffer[0] = (byte)reportId;
-                    if (HidInterop.HidD_GetFeatureReport(handle, buffer, buffer.Length))
+                    if (HidInterop.HidD_GetFeature(handle, buffer, buffer.Length))
                         answered.Append(" id" + reportId + ":" + BitConverter.ToString(buffer, 0, Math.Min(12, buffer.Length)));
                 }
                 return title + (answered.Length == 0 ? " (отчёты не отвечают)" : answered.ToString());

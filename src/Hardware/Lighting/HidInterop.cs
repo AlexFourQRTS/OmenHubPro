@@ -34,7 +34,7 @@ namespace OmenHub.Hardware.Lighting
         [DllImport("hid.dll")] private static extern bool HidD_GetPreparsedData(IntPtr handle, out IntPtr data);
         [DllImport("hid.dll")] private static extern bool HidD_FreePreparsedData(IntPtr data);
         [DllImport("hid.dll")] private static extern int HidP_GetCaps(IntPtr data, out HidCapabilities capabilities);
-        [DllImport("hid.dll")] public static extern bool HidD_GetFeatureReport(IntPtr handle, byte[] buffer, int length);
+        [DllImport("hid.dll")] public static extern bool HidD_GetFeature(IntPtr handle, byte[] buffer, int length);
         [DllImport("setupapi.dll")] private static extern IntPtr SetupDiGetClassDevs(ref Guid guid, string enumerator, IntPtr parent, int flags);
         [DllImport("setupapi.dll")] private static extern bool SetupDiEnumDeviceInterfaces(IntPtr set, IntPtr info, ref Guid guid, int index, ref InterfaceData data);
         [DllImport("setupapi.dll", CharSet = CharSet.Unicode)] private static extern bool SetupDiGetDeviceInterfaceDetail(IntPtr set, ref InterfaceData data, IntPtr detail, int size, out int required, IntPtr info);

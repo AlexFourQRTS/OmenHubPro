@@ -18,6 +18,9 @@ build.bat
 ```
 Output: `OmenHub.exe` (requests administrator rights — the BIOS WMI interface needs them).
 
+## Linux
+Keyboard / light-bar lighting only: see `linux/README.md` (branch `linux`).
+
 ## BIOS protocol notes
 See `docs/BIOS-PROTOCOL.md`.
 

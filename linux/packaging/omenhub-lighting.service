@@ -1,0 +1,9 @@
+[Unit]
+Description=OmenHub Pro keyboard lighting
+
+[Service]
+ExecStart=%h/.local/bin/omenhub-lighting daemon
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

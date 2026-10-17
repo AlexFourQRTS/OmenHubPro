@@ -23,3 +23,4 @@ OffAutoUpdate.txt
 Thumbs.db
 desktop.ini
 logs/
+probe/*.ready

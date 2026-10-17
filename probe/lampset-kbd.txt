@@ -1,0 +1,2 @@
+﻿opening \\?\HID#VID_0D62&PID_54BF&MI_04#8&2bb9149a&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+ERROR: async Started after 20000 ms

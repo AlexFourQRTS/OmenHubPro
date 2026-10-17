@@ -1,0 +1,46 @@
+﻿VID_06CB PID_CFC5  page=0x01 usage=0x02  in=4 out=0 feat=0  "HIDI2C Device"
+   \\?\hid#syna32fe&col01#4&6eb4cbc&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0xFF01 usage=0x01  in=65 out=65 feat=9  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_03#8&34e66d1&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0x01 usage=0x02  in=8 out=0 feat=0  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col01#8&167e830f&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0x0C usage=0x01  in=3 out=0 feat=0  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col02#8&167e830f&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0xFF02 usage=0x01  in=4 out=0 feat=0  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col03#8&167e830f&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_04D9 PID_FC4D  page=0xFFA0 usage=0x01  in=8 out=0 feat=2048  "USB Gaming Mouse"
+   \\?\hid#vid_04d9&pid_fc4d&mi_02&col02#8&2c3f068&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0x01 usage=0x0C  in=2 out=0 feat=0  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col04#8&167e830f&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_06CB PID_CFC5  page=0x0D usage=0x05  in=30 out=0 feat=257  "HIDI2C Device"
+   \\?\hid#syna32fe&col02#4&6eb4cbc&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_06CB PID_CFC5  page=0x0D usage=0x0E  in=0 out=0 feat=2  "HIDI2C Device"
+   \\?\hid#syna32fe&col03#4&6eb4cbc&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0x01 usage=0x06  in=31 out=0 feat=0  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_02&col05#8&167e830f&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd
+VID_03F0 PID_01C5  page=0x0C usage=0x01  in=2 out=0 feat=0  "HyperX Wireless Embedded Receiver"
+   \\?\hid#vid_03f0&pid_01c5&col01#7&2cf054cc&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_03F0 PID_01C5  page=0xFF13 usage=0x01  in=62 out=62 feat=0  "HyperX Wireless Embedded Receiver"
+   \\?\hid#vid_03f0&pid_01c5&col02#7&2cf054cc&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_03F0 PID_01C5  page=0x1C0 usage=0x01  in=64 out=64 feat=64  "HyperX Wireless Embedded Receiver"
+   \\?\hid#vid_03f0&pid_01c5&col03#7&2cf054cc&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0x01 usage=0x06  in=9 out=2 feat=0  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_01#8&29ae9f4d&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd
+VID_03F0 PID_01C5  page=0xFFC0 usage=0x01  in=64 out=64 feat=0  "HyperX Wireless Embedded Receiver"
+   \\?\hid#vid_03f0&pid_01c5&col04#7&2cf054cc&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_06CB PID_CFC5  page=0xFF00 usage=0x01  in=62 out=21 feat=4  "HIDI2C Device"
+   \\?\hid#syna32fe&col04#4&6eb4cbc&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_03F0 PID_01C5  page=0xFF90 usage=0xFF00  in=64 out=64 feat=64  "HyperX Wireless Embedded Receiver"
+   \\?\hid#vid_03f0&pid_01c5&col05#7&2cf054cc&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0xFF00 usage=0x01  in=65 out=65 feat=65  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_00#8&143f184&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0D62 PID_54BF  page=0x59 usage=0x01  in=0 out=0 feat=51  "HP Gaming Keyboard II"
+   \\?\hid#vid_0d62&pid_54bf&mi_04#8&2bb9149a&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_04D9 PID_FC4D  page=0x01 usage=0x02  in=9 out=0 feat=0  "USB Gaming Mouse"
+   \\?\hid#vid_04d9&pid_fc4d&mi_00#8&240b7907&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_04D9 PID_FC4D  page=0x01 usage=0x06  in=9 out=0 feat=0  "USB Gaming Mouse"
+   \\?\hid#vid_04d9&pid_fc4d&mi_01#8&373b9545&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}\kbd
+VID_04D9 PID_FC4D  page=0x0C usage=0x01  in=8 out=0 feat=0  "USB Gaming Mouse"
+   \\?\hid#vid_04d9&pid_fc4d&mi_02&col01#8&2c3f068&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+VID_0461 PID_0001  page=0x59 usage=0x01  in=2 out=0 feat=51  "HID VHF Driver"
+   \\?\hid#hid_device_system_vhf#2&30dd38ae&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}

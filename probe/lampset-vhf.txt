@@ -1,0 +1,3 @@
+﻿opening \\?\HID#HID_DEVICE_SYSTEM_VHF#2&30dd38ae&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+opened, lamps=4, strobing 8 s
+done

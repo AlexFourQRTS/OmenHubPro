@@ -21,8 +21,9 @@ namespace OmenHub
         public static int[] RGpu = { 1800, 2200, 3000, 4000, 5500 };
         public static int SrcCpu = 0, SrcGpu = 1; // 0 system, 1 gpu, 2 max of all
         public static int CpuW = 45;
-        public const int ProAutoW = 40;
-        public static bool ProAuto = false;          // "Pro auto" profile: CPU held at ProAutoW
+        public const int ProAutoW = 40, BatteryW = 20;
+        public static bool BatteryEco = true;        // on battery: CPU held at BatteryW
+        public static bool ProAuto = true;           // default: on AC the CPU is held at ProAutoW (40 W); on battery BatteryW (20 W)
 
         public static string Dir
         {
@@ -67,7 +68,7 @@ namespace OmenHub
                 sb.AppendLine("TCpu=" + J(TCpu)); sb.AppendLine("RCpu=" + J(RCpu));
                 sb.AppendLine("TGpu=" + J(TGpu)); sb.AppendLine("RGpu=" + J(RGpu));
                 sb.AppendLine("SrcCpu=" + SrcCpu); sb.AppendLine("SrcGpu=" + SrcGpu);
-                sb.AppendLine("CpuW=" + CpuW); sb.AppendLine("ProAuto=" + (ProAuto ? 1 : 0));
+                sb.AppendLine("CpuW=" + CpuW); sb.AppendLine("ProAuto=" + (ProAuto ? 1 : 0)); sb.AppendLine("BatteryEco=" + (BatteryEco ? 1 : 0));
                 File.WriteAllText(FilePath, sb.ToString());
             }
             catch { }
@@ -97,7 +98,7 @@ namespace OmenHub
                     if (a != null && b != null && a.Length == b.Length) { TGpu = a; RGpu = b; }
                 }
                 SrcCpu = G(d, "SrcCpu", SrcCpu); SrcGpu = G(d, "SrcGpu", SrcGpu);
-                CpuW = G(d, "CpuW", CpuW); ProAuto = G(d, "ProAuto", 0) == 1;
+                CpuW = G(d, "CpuW", CpuW); ProAuto = G(d, "ProAuto", 1) == 1; BatteryEco = G(d, "BatteryEco", 1) == 1;
             }
             catch { }
         }
@@ -258,7 +259,7 @@ namespace OmenHub
         public double[] Zones = new double[0];
         public int SysTemp = -1;
         public string Status = "";
-        public bool Alert;
+        public bool Alert, OnBattery;
     }
 
 
@@ -407,20 +408,22 @@ namespace OmenHub
             if (biosOk) Bios.SetFanMax(false);
         }
 
-        static DateTime lastPro = DateTime.MinValue; static bool proActive;
-        // "Pro auto": hold the CPU at Cfg.ProAutoW; verifies every 30 s and re-applies if something reset the limit
-        static void ProAutoTick()
+        static DateTime lastPro = DateTime.MinValue; static int proTarget = -1;
+        // CPU power profile: on battery -> BatteryW (if BatteryEco), on AC -> ProAutoW (if ProAuto), otherwise hands off.
+        // Applied immediately when the target changes, re-verified every 30 s (something may reset the limit).
+        static void PowerTick(Snap s)
         {
-            if (!Cfg.ProAuto) { proActive = false; return; }
+            int target = (s.OnBattery && Cfg.BatteryEco) ? Cfg.BatteryW : (Cfg.ProAuto ? Cfg.ProAutoW : -1);
+            if (target < 0) { proTarget = -1; return; }
             if (!RyzenAdj.Present) return;
-            bool fresh = !proActive;
+            bool fresh = target != proTarget;
             if (!fresh && (DateTime.Now - lastPro).TotalSeconds < 30) return;
-            proActive = true; lastPro = DateTime.Now;
+            proTarget = target; lastPro = DateTime.Now;
             double cur = fresh ? double.NaN : RyzenAdj.ReadLimit();
-            if (double.IsNaN(cur) || Math.Abs(cur - Cfg.ProAutoW) > 0.5)
+            if (double.IsNaN(cur) || Math.Abs(cur - target) > 0.5)
             {
-                RyzenAdj.Set(Cfg.ProAutoW);
-                Log.W("ProAuto: set " + Cfg.ProAutoW + " W (was " + cur + ")");
+                RyzenAdj.Set(target);
+                Log.W("PowerProfile: " + (s.OnBattery ? "battery" : "AC") + " -> " + target + " W (was " + cur + ")");
             }
         }
 
@@ -429,7 +432,7 @@ namespace OmenHub
             while (run)
             {
                 var s = new Snap();
-                try { Poll(s); Control(s); ProAutoTick(); } catch (Exception e) { s.Status = "Ошибка: " + e.Message; }
+                try { Poll(s); Control(s); PowerTick(s); } catch (Exception e) { s.Status = "Ошибка: " + e.Message; }
                 S = s; tick++;
                 for (int i = 0; i < 15 && run; i++) Thread.Sleep(100);
             }
@@ -459,6 +462,7 @@ namespace OmenHub
                 s.ZoneNames = names.ToArray(); s.Zones = vals.ToArray();
             }
             catch { }
+            try { s.OnBattery = System.Windows.Forms.SystemInformation.PowerStatus.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Offline; } catch { }
             double mx = s.BiosTemp;
             foreach (double v in s.Zones) if (v > mx) mx = v;
             s.SysTemp = (int)Math.Round(mx);

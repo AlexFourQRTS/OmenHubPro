@@ -41,7 +41,7 @@ namespace OmenHub
         // fans
         Seg segMode, segFan, segSrc; Slider slCpu, slGpu; Label lSlCpu, lSlGpu; Curve curve; Label modeInfo;
         // power / cpu
-        Label lGpuFlags, lCpuW; Slider slCpuW; TextBox tbRyzen; Seg segPro, segAuto; Label lAutoRes;
+        Label lGpuFlags, lCpuW; Slider slCpuW; TextBox tbRyzen; Seg segPro, segAuto, segBat; Label lAutoRes;
         Seg segTheme;
 
         public MainForm()
@@ -121,7 +121,7 @@ namespace OmenHub
             segMode.Sel = Cfg.FanMode; ModeText();
             slCpu.Value = Cfg.ManCpu; slGpu.Value = Cfg.ManGpu; SlText();
             LoadCurve();
-            segPro.Sel = Cfg.ProAuto ? 1 : 0;
+            segPro.Sel = Cfg.ProAuto ? 1 : 0; segBat.Sel = Cfg.BatteryEco ? 1 : 0;
             slCpuW.Value = Cfg.ProAuto ? Cfg.ProAutoW : Cfg.CpuW; lCpuW.Text = slCpuW.Value + " Вт";
             segTheme.Sel = Cfg.Dark ? 0 : 1;
         }
@@ -214,7 +214,7 @@ namespace OmenHub
 
         void BuildPower(Panel pg)
         {
-            var pr = MkCard(pg, 24, 16, 802, 100, "Профиль мощности");
+            var pr = MkCard(pg, 24, 16, 802, 140, "Профиль мощности");
             segPro = new Seg { Left = 20, Top = 50, Width = 340, Items = new[] { "Вручную", "Про авто (CPU 40 Вт)" }, Sel = Cfg.ProAuto ? 1 : 0 }; pr.Controls.Add(segPro);
             Lb(pr, "Про авто: процессор держится на 40 Вт — лучший баланс: ≈6100 очков против ≈6800 на 75 Вт.", 376, 58, 8.5f, false, "sub");
             segPro.Changed += delegate
@@ -223,12 +223,13 @@ namespace OmenHub
                 if (Cfg.ProAuto) { Cfg.CpuW = Cfg.ProAutoW; slCpuW.Value = Cfg.ProAutoW; lCpuW.Text = Cfg.ProAutoW + " Вт"; }
                 dirty = true;
             };
+Lb(pr, "От батареи", 20, 100, 9.5f, false, "sub");            segBat = new Seg { Left = 140, Top = 94, Width = 340, Items = new[] { "Без изменений", "CPU " + Cfg.BatteryW + " Вт (экономия)" }, Sel = Cfg.BatteryEco ? 1 : 0 }; pr.Controls.Add(segBat);            Lb(pr, "Включается сам при отключении зарядки и снимается при подключении.", 496, 102, 8.5f, false, "sub");            segBat.Changed += delegate { Cfg.BatteryEco = segBat.Sel == 1; dirty = true; };
 
-            var g = MkCard(pg, 24, 128, 802, 110, "GPU");
+            var g = MkCard(pg, 24, 168, 802, 110, "GPU");
             lGpuFlags = Lb(g, "", 20, 46, 9.5f, false, "sub");
             Lb(g, "Лимит ватт видеокарты задаёт BIOS (режимы Custom TGP / Dynamic Boost). Управление ваттами GPU — следующий этап.", 20, 78, 8.5f, false, "sub");
 
-            var c = MkCard(pg, 24, 254, 802, 370, "CPU: лимит мощности (RyzenAdj)");
+            var c = MkCard(pg, 24, 294, 802, 334, "CPU: лимит мощности (RyzenAdj)");
             Lb(c, "Диапазон 20–75 Вт, шаг 5. Использует tools\\ryzenadj\\ryzenadj.exe (драйвер WinRing0) — запускается только по кнопкам ниже.", 20, 42, 8.5f, false, "sub");
             lCpuW = new Label { Left = 660, Top = 74, Width = 120, Height = 24, Font = Th.F(10.5f, true), Tag = "text", BackColor = Color.Transparent, TextAlign = ContentAlignment.MiddleRight }; c.Controls.Add(lCpuW);
             slCpuW = new Slider { Left = 20, Top = 74, Width = 630, Min = 20, Max = 75, Step = 5, Value = Cfg.ProAuto ? Cfg.ProAutoW : Cfg.CpuW }; c.Controls.Add(slCpuW);
@@ -236,7 +237,7 @@ namespace OmenHub
             lCpuW.Text = slCpuW.Value + " Вт";
             var a1 = Button(c, "Применить", 20, 118, 140, true);
             var a2 = Button(c, "Прочитать (ryzenadj -i)", 172, 118, 220, false);
-            tbRyzen = new TextBox { Left = 20, Top = 166, Width = 762, Height = 188, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None };
+            tbRyzen = new TextBox { Left = 20, Top = 166, Width = 762, Height = 150, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Font = new Font("Consolas", 9), BorderStyle = BorderStyle.None };
             c.Controls.Add(tbRyzen);
             a1.Click += delegate
             {
@@ -376,7 +377,7 @@ namespace OmenHub
                     + " curveGpu=" + string.Join(",", Array.ConvertAll(Cfg.TGpu, x => x.ToString())) + "/" + string.Join(",", Array.ConvertAll(Cfg.RGpu, x => x.ToString())));
             }
             var s = Engine.S;
-            status.Text = s.Status + "    |    режим: " + segMode.Items[Cfg.FanMode];
+            status.Text = s.Status + "    |    режим: " + segMode.Items[Cfg.FanMode] + "    |    питание: " + (s.OnBattery ? "батарея" : "сеть");
             status.ForeColor = s.Alert ? Th.Bad : Th.Sub; status.Font = Th.F(8.5f, s.Alert);
             chipCpu.Value = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; chipGpu.Value = s.FanGpu < 0 ? "—" : s.FanGpu + " об/мин";
             chipCpu.Alert = chipGpu.Alert = s.Alert; chipCpu.Invalidate(); chipGpu.Invalidate();

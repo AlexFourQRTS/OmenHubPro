@@ -108,10 +108,11 @@ namespace OmenHub
                 var c = new ManagementClass(@"root\wmi:hpqBIntM");
                 foreach (ManagementObject o in c.GetInstances()) { inst = o; break; }
                 inCls = new ManagementClass(@"root\wmi:hpqBDataIn");
-                if (inst == null) { Error = "hpqBIntM не найден"; return false; }
+                if (inst == null) { Error = "hpqBIntM не найден"; Log.W("BIOS init: hpqBIntM not found"); return false; }
+                Log.W("BIOS init OK: " + inst["InstanceName"]);
                 return true;
             }
-            catch (Exception e) { Error = e.Message; return false; }
+            catch (Exception e) { Error = e.Message; Log.W("BIOS init FAILED: " + e.Message); return false; }
         }
 
         static bool Call(uint cmd, uint type, byte[] payload, int outSize, out byte[] res)
@@ -134,9 +135,11 @@ namespace OmenHub
                     var r = inst.InvokeMethod(m, args, null);
                     var o = (ManagementBaseObject)r["OutData"];
                     res = (byte[])o["Data"];
-                    return Convert.ToUInt32(o["rwReturnCode"]) == 0;
+                    uint rc = Convert.ToUInt32(o["rwReturnCode"]);
+                    if (rc != 0) Log.W(string.Format("BIOS call cmd=0x{0:X} type=0x{1:X2} rc={2}", cmd, type, rc));
+                    return rc == 0;
                 }
-                catch (Exception e) { Error = e.Message; return false; }
+                catch (Exception e) { Error = e.Message; Log.W(string.Format("BIOS call cmd=0x{0:X} type=0x{1:X2} EXC {2}", cmd, type, e.Message)); return false; }
             }
         }
 
@@ -172,10 +175,47 @@ namespace OmenHub
     }
 
     // ---------------------------------------------------------------- helpers
+    static class Log
+    {
+        static readonly object lk = new object();
+        public static string Path_
+        {
+            get
+            {
+                string d = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+                try { if (!Directory.Exists(d)) Directory.CreateDirectory(d); } catch { }
+                return Path.Combine(d, "omenhub.log");
+            }
+        }
+        static string last = ""; static DateTime lastAt = DateTime.MinValue;
+        public static void W(string msg)
+        {
+            try
+            {
+                lock (lk)
+                {
+                    if (msg == last && (DateTime.Now - lastAt).TotalSeconds < 60) return;   // de-dup repeated errors
+                    last = msg; lastAt = DateTime.Now;
+                    string f = Path_;
+                    if (File.Exists(f) && new FileInfo(f).Length > 1000000) File.Delete(f);
+                    File.AppendAllText(f, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "  " + msg + Environment.NewLine, Encoding.UTF8);
+                }
+            }
+            catch { }
+        }
+    }
+
     static class Proc
     {
         public static string Run(string file, string args, int timeoutMs)
         {
+            int code;
+            return RunCode(file, args, timeoutMs, out code);
+        }
+
+        public static string RunCode(string file, string args, int timeoutMs, out int code)
+        {
+            code = -1;
             try
             {
                 var psi = new ProcessStartInfo(file, args);
@@ -186,6 +226,7 @@ namespace OmenHub
                 {
                     string o = p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd();
                     p.WaitForExit(timeoutMs);
+                    code = p.HasExited ? p.ExitCode : -2;
                     return o.Trim();
                 }
             }
@@ -216,6 +257,7 @@ namespace OmenHub
 
         public static void Start()
         {
+            Log.W("=== OmenHub start, " + Environment.OSVersion + ", " + (Environment.Is64BitProcess ? "x64" : "x86") + " ===");
             biosOk = Bios.Init();
             try { pcLoad = new PerformanceCounter("Processor Information", "% Processor Utility", "_Total"); pcLoad.NextValue(); } catch { pcLoad = null; }
             try { pcPerf = new PerformanceCounter("Processor Information", "% Processor Performance", "_Total"); pcPerf.NextValue(); } catch { pcPerf = null; }
@@ -320,7 +362,7 @@ namespace OmenHub
 
             if (hot >= 95)   // failsafe: never let it cook
             {
-                if (!emergency) { Bios.SetFanMax(true); emergency = true; s.Status = "АВАРИЙНЫЙ ОБДУВ: " + (int)hot + " °C"; }
+                if (!emergency) { Log.W("EMERGENCY max fans at " + (int)hot + "C"); Bios.SetFanMax(true); emergency = true; s.Status = "АВАРИЙНЫЙ ОБДУВ: " + (int)hot + " °C"; }
                 return;
             }
             if (emergency) { emergency = false; applied = -99; }
@@ -332,6 +374,7 @@ namespace OmenHub
                 else if (mode == 1) Bios.SetFanMax(true);
                 else Bios.SetFanMax(false);
                 applied = mode; force = true; lastC = lastG = -1;
+                Log.W("fan mode -> " + mode);
             }
             if (mode == 1) { if ((DateTime.Now - lastSet).TotalSeconds > 20) { Bios.SetFanMax(true); lastSet = DateTime.Now; } return; }
             if (mode == 0) return;
@@ -344,7 +387,8 @@ namespace OmenHub
 
             if (force || c != lastC || g != lastG || (DateTime.Now - lastSet).TotalSeconds > 10)
             {
-                Bios.SetFanLevel(c, g);
+                bool okSet = Bios.SetFanLevel(c, g);
+                if (!okSet || force) Log.W("SetFanLevel " + c + "/" + g + " ok=" + okSet);
                 lastC = c; lastG = g; lastSet = DateTime.Now;
             }
         }

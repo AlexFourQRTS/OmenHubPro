@@ -16,7 +16,8 @@ namespace OmenHub
             {
                 if (!created) return;
                 Cfg.Load(); Th.Set(Cfg.Dark);
-                AppDomain.CurrentDomain.UnhandledException += delegate { try { Bios.SetFanMax(false); } catch { } };
+                AppDomain.CurrentDomain.UnhandledException += delegate (object s, UnhandledExceptionEventArgs ev) { Log.W("UNHANDLED: " + ev.ExceptionObject); try { Bios.SetFanMax(false); } catch { } };
+                Application.ThreadException += delegate (object s, ThreadExceptionEventArgs ev) { Log.W("UI EXCEPTION: " + ev.Exception); };
                 Engine.Start();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
@@ -209,7 +210,18 @@ namespace OmenHub
             a1.Click += delegate
             {
                 int mw = slCpuW.Value * 1000;
-                tbRyzen.Text = Ryzen("--stapm-limit=" + mw + " --fast-limit=" + mw + " --slow-limit=" + mw);
+                string set = Ryzen("--stapm-limit=" + mw + " --fast-limit=" + mw + " --slow-limit=" + mw);
+                string info = Ryzen("-i");
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("Запрошено: " + slCpuW.Value + " Вт");
+                sb.AppendLine("Ответ установки: " + set.Replace("\r\n", " | "));
+                sb.AppendLine("--- реальные лимиты после установки ---");
+                foreach (string line in info.Split('\n'))
+                    if (line.IndexOf("LIMIT", StringComparison.OrdinalIgnoreCase) >= 0 || line.IndexOf("VALUE", StringComparison.OrdinalIgnoreCase) >= 0
+                        || line.IndexOf("TEMP", StringComparison.OrdinalIgnoreCase) >= 0 || line.IndexOf("error", StringComparison.OrdinalIgnoreCase) >= 0
+                        || line.IndexOf("fail", StringComparison.OrdinalIgnoreCase) >= 0 || line.IndexOf("unsupport", StringComparison.OrdinalIgnoreCase) >= 0)
+                        sb.AppendLine(line.TrimEnd('\r'));
+                tbRyzen.Text = sb.ToString().Replace("\r\n", "\n").Replace("\n", "\r\n");
             };
             a2.Click += delegate { tbRyzen.Text = Ryzen("-i"); };
         }
@@ -217,9 +229,12 @@ namespace OmenHub
         string Ryzen(string args)
         {
             string exe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"tools\ryzenadj\ryzenadj.exe");
-            if (!File.Exists(exe)) return "Не найден " + exe;
-            var r = Proc.Run(exe, args, 20000);
-            return r.Length == 0 ? "(готово, вывода нет)" : r.Replace("\n", "\r\n");
+            if (!File.Exists(exe)) { Log.W("ryzenadj missing: " + exe); return "Не найден " + exe; }
+            int code;
+            var r = Proc.RunCode(exe, args, 20000, out code);
+            Log.W("ryzenadj " + args + "  -> exit=" + code + "\r\n" + r);
+            if (code != 0) r = "[код выхода " + code + "] " + r;
+            return r.Length == 0 ? "(готово, вывода нет)" : r.Replace("\r\n", "\n").Replace("\n", "\r\n");
         }
 
         void BuildLight(Panel pg)

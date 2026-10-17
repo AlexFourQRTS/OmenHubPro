@@ -110,8 +110,20 @@ namespace OmenHub
             for (int k = 0; k < pages.Length; k++) { pages[k].Visible = k == i; navs[k].Active = k == i; navs[k].Invalidate(); }
             title.Text = names[i];
             if (i == 2) lGpuFlags.Text = "Режим BIOS:  " + Bios.GetGpuPower();
+            SyncUi();
         }
 
+
+        // Single source of truth is Cfg: re-read it into every control whenever a page is shown.
+        void SyncUi()
+        {
+            segMode.Sel = Cfg.FanMode; ModeText();
+            slCpu.Value = Cfg.ManCpu; slGpu.Value = Cfg.ManGpu; SlText();
+            LoadCurve();
+            segPro.Sel = Cfg.ProAuto ? 1 : 0;
+            slCpuW.Value = Cfg.ProAuto ? Cfg.ProAutoW : Cfg.CpuW; lCpuW.Text = slCpuW.Value + " Вт";
+            segTheme.Sel = Cfg.Dark ? 0 : 1;
+        }
         void ApplyTheme() { Th.Set(Cfg.Dark); Recolor(this); Invalidate(true); }
         void Recolor(Control c)
         {
@@ -341,7 +353,13 @@ namespace OmenHub
 
         void Tick()
         {
-            if (dirty) { dirty = false; Cfg.Save(); }
+            if (dirty)
+            {
+                dirty = false; Cfg.Save();
+                Log.W("CONFIG mode=" + Cfg.FanMode + " man=" + Cfg.ManCpu + "/" + Cfg.ManGpu + " srcCpu=" + Cfg.SrcCpu + " srcGpu=" + Cfg.SrcGpu + " cpuW=" + Cfg.CpuW + " proAuto=" + Cfg.ProAuto
+                    + " curveCpu=" + string.Join(",", Array.ConvertAll(Cfg.TCpu, x => x.ToString())) + "/" + string.Join(",", Array.ConvertAll(Cfg.RCpu, x => x.ToString()))
+                    + " curveGpu=" + string.Join(",", Array.ConvertAll(Cfg.TGpu, x => x.ToString())) + "/" + string.Join(",", Array.ConvertAll(Cfg.RGpu, x => x.ToString())));
+            }
             var s = Engine.S;
             status.Text = s.Status + "    |    режим: " + segMode.Items[Cfg.FanMode];
             status.ForeColor = s.Alert ? Th.Bad : Th.Sub; status.Font = Th.F(8.5f, s.Alert);

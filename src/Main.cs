@@ -9,8 +9,13 @@ namespace OmenHub
     static class Program
     {
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            if (Array.IndexOf(args, "/quit") >= 0)        // ask the running instance to exit for real
+            {
+                try { EventWaitHandle.OpenExisting("OmenHub.Quit").Set(); } catch { }
+                return;
+            }
             bool created;
             using (var mx = new Mutex(true, "OmenHub.SingleInstance", out created))
             {
@@ -21,7 +26,10 @@ namespace OmenHub
                 Engine.Start();
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new MainForm());
+                var form = new MainForm();
+                var quit = new EventWaitHandle(false, EventResetMode.AutoReset, "OmenHub.Quit");
+                var qt = new Thread(delegate () { quit.WaitOne(); try { form.BeginInvoke(new Action(form.ExitApp)); } catch { } }); qt.IsBackground = true; qt.Start();
+                Application.Run(form);
                 Engine.Stop(); Cfg.Save();
             }
         }
@@ -49,7 +57,7 @@ namespace OmenHub
             Text = "OmenHub"; ClientSize = new Size(1060, 700);
             FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false; StartPosition = FormStartPosition.CenterScreen;
             DoubleBuffered = true;
-            if (Array.IndexOf(Environment.GetCommandLineArgs(), "/autostart") >= 0) WindowState = FormWindowState.Minimized;
+            startHidden = Array.IndexOf(Environment.GetCommandLineArgs(), "/autostart") >= 0;
 
             side = new Panel { Dock = DockStyle.Left, Width = 210 }; Controls.Add(side);
             head = new Panel { Dock = DockStyle.Top, Height = 64 }; Controls.Add(head);
@@ -78,7 +86,17 @@ namespace OmenHub
             ApplyTheme(); Show(0);
 
             tm.Interval = 1000; tm.Tick += delegate { Tick(); }; tm.Start();
-            FormClosing += delegate { Cfg.Save(); };
+            StartOmenKey(); BuildTray();
+            FormClosing += delegate (object s, FormClosingEventArgs e)
+            {
+                if (!exiting && e.CloseReason == CloseReason.UserClosing)   // X button: hide to tray instead of quitting
+                {
+                    e.Cancel = true; Hide();
+                    if (!trayTipShown) { trayTipShown = true; try { tray.ShowBalloonTip(2500, "OmenHub работает в трее", "Полный выход: правый клик по значку → Выход.", ToolTipIcon.Info); } catch { } }
+                    return;
+                }
+                Cfg.Save(); try { if (omenWatcher != null) omenWatcher.Stop(); } catch { }
+            };
         }
 
         // ------------------------------------------------------------ helpers
@@ -360,6 +378,74 @@ Lb(pr, "От батареи", 20, 100, 9.5f, false, "sub");            segBat = 
             Lb(s2, "Приоритет: процесс — «Высокий», поток управления кулерами — наивысший, «режим эффективности» Windows отключён.\nReal-time намеренно не используется: он может подвесить систему.", 20, 150, 9, false, "sub");
         }
 
+
+
+        // ------------------------------------------------------------ tray
+        NotifyIcon tray; bool exiting, startHidden, trayTipShown;
+
+        protected override void SetVisibleCore(bool value)
+        {
+            if (startHidden) { startHidden = false; if (!IsHandleCreated) CreateHandle(); value = false; }   // autostart: begin in tray
+            base.SetVisibleCore(value);
+        }
+
+        void BuildTray()
+        {
+            var menu = new ContextMenuStrip();
+            menu.Items.Add("Открыть OmenHub", null, delegate { ShowWindow(); });
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Вентиляторы: авто (BIOS)", null, delegate { Cfg.FanMode = 0; dirty = true; SyncUi(); });
+            menu.Items.Add("Вентиляторы: максимум", null, delegate { Cfg.FanMode = 1; dirty = true; SyncUi(); });
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Выход (кулеры вернутся в авто)", null, delegate { ExitApp(); });
+            tray = new NotifyIcon { ContextMenuStrip = menu, Text = "OmenHub", Visible = true };
+            try { tray.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { tray.Icon = SystemIcons.Application; }
+            tray.MouseClick += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) ShowWindow(); };
+            Resize += delegate { if (WindowState == FormWindowState.Minimized) Hide(); };
+        }
+
+        void ShowWindow()
+        {
+            Show();
+            if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
+            TopMost = true; TopMost = false; Activate(); BringToFront();
+        }
+
+        public void ExitApp()
+        {
+            exiting = true;
+            try { tray.Visible = false; tray.Dispose(); } catch { }
+            Close();
+        }
+        // ------------------------------------------------------------ OMEN key (BIOS WMI event 29 / data 8613)
+        System.Management.ManagementEventWatcher omenWatcher; DateTime lastOmenKey = DateTime.MinValue;
+        void StartOmenKey()
+        {
+            try
+            {
+                omenWatcher = new System.Management.ManagementEventWatcher(new System.Management.ManagementScope(@"root\wmi"),
+                    new System.Management.WqlEventQuery("SELECT * FROM hpqBEvnt"));
+                omenWatcher.EventArrived += delegate (object s, System.Management.EventArrivedEventArgs ev)
+                {
+                    if (Convert.ToInt32(ev.NewEvent["EventID"]) != 29) return;            // 29 = OMEN key
+                    if ((DateTime.Now - lastOmenKey).TotalMilliseconds < 800) return;   // key held / bounce
+                    lastOmenKey = DateTime.Now;
+                    Log.W("OMEN key pressed (data=" + ev.NewEvent["EventData"] + ")");
+                    try { BeginInvoke(new Action(ToggleWindow)); } catch { }
+                };
+                omenWatcher.Start();
+                Log.W("OMEN key listener started");
+            }
+            catch (Exception e) { Log.W("OMEN key listener FAILED: " + e.Message); }
+        }
+
+        void ToggleWindow()
+        {
+            if (Visible && WindowState != FormWindowState.Minimized && ContainsFocus) { WindowState = FormWindowState.Minimized; return; }
+            Show();
+            if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
+            TopMost = true; TopMost = false; Activate(); BringToFront();
+        }
         // ------------------------------------------------------------ live update
         void Set(Label l, Bar b, string text, double frac, Color? col)
         {
@@ -381,6 +467,7 @@ Lb(pr, "От батареи", 20, 100, 9.5f, false, "sub");            segBat = 
             status.ForeColor = s.Alert ? Th.Bad : Th.Sub; status.Font = Th.F(8.5f, s.Alert);
             chipCpu.Value = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; chipGpu.Value = s.FanGpu < 0 ? "—" : s.FanGpu + " об/мин";
             chipCpu.Alert = chipGpu.Alert = s.Alert; chipCpu.Invalidate(); chipGpu.Invalidate();
+            try { tray.Text = ("OmenHub  CPU " + (s.FanCpu < 0 ? "—" : s.FanCpu.ToString()) + " / GPU " + (s.FanGpu < 0 ? "—" : s.FanGpu.ToString()) + " об/мин" + (s.Alert ? "  ТРЕВОГА" : "")); } catch { }
             if (!pages[0].Visible && !pages[1].Visible) return;
 
             lFanCpu.Text = s.FanCpu < 0 ? "—" : s.FanCpu + " об/мин"; bFanCpu.V = Math.Max(0, s.FanCpu) / 6000.0; bFanCpu.Invalidate();

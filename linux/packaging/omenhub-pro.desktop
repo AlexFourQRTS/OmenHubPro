@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OmenHub Pro
+Comment=Keyboard and light-bar lighting for HP OMEN
+Exec=omenhub-lighting gui
+Icon=input-keyboard
+Terminal=false
+Categories=Settings;HardwareSettings;

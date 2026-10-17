@@ -6,7 +6,15 @@
 
 Вентиляторы, питание, оверлей, FPS в порт не входят — на Linux этим занимаются ядро (`hp-wmi`, `platform_profile`) и другие утилиты.
 
-## Установка
+## Установка (deb-пакет)
+```
+linux/packaging/build-deb.sh            # -> linux/dist/omenhub-pro_0.1.0_all.deb
+sudo apt install ./linux/dist/omenhub-pro_0.1.0_all.deb
+systemctl --user enable --now omenhub-lighting      # автозапуск без окна
+```
+Пакет ставит команду `omenhub-lighting`, правило udev (применяется сразу, без перезагрузки), пользовательский юнит systemd и ярлык «OmenHub Pro».
+
+## Установка из исходников (без пакета)
 ```
 linux/packaging/install.sh
 sudo cp linux/packaging/70-omenhub.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger --subsystem-match=hidraw

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+    if command -v py3compile >/dev/null 2>&1; then py3compile -p omenhub-pro || true; fi
+    if command -v udevadm >/dev/null 2>&1; then
+        udevadm control --reload || true
+        udevadm trigger --subsystem-match=hidraw --action=change || true   # applies the access rule without a reboot
+    fi
+fi
+exit 0

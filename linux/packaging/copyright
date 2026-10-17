@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: OmenHub Pro
+Source: https://github.com/AlexFourQRTS/OmenHubPro
+
+Files: *
+Copyright: 2026 Oleksandr Maliuk
+License: Proprietary
+ All rights reserved. The upstream repository does not state a licence yet.

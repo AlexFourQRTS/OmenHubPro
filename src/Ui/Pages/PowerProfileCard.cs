@@ -23,7 +23,7 @@ namespace OmenHub.Ui.Pages
             PageKit.MakeLabel(this, forBattery ? "Профиль мощности: от батареи" : "Профиль мощности: от сети", 20, 12, 11, true, PageKit.RoleText);
             string[] items = forBattery
                 ? new[] { "Без изменений", "Экономия: CPU " + AppSettings.BatteryWatts + " / GPU " + AppSettings.BatteryGpuWatts + " Вт" }
-                : new[] { "Вручную", "Про авто: CPU " + AppSettings.ProAutoWatts + " Вт" };
+                : new[] { "Вручную", "Про авто: CPU " + AppSettings.ProAutoWatts + " / GPU " + AppSettings.ProAutoGpuWatts + " Вт" };
             segments = PageKit.MakeSegments(this, 20, 42, 460, items, 0);
             segments.SelectionChanged += delegate { OnChosen(); };
             LoadFromSettings();

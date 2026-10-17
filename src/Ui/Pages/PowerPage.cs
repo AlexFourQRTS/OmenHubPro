@@ -14,7 +14,7 @@ namespace OmenHub.Ui.Pages
             Controls.Add(batteryCard);
             Controls.Add(gpuCard);
             Controls.Add(cpuCard);
-            mainsCard.ProfileChanged += delegate { cpuCard.LoadFromSettings(); };
+            mainsCard.ProfileChanged += delegate { cpuCard.LoadFromSettings(); gpuCard.LoadFromSettings(); };
         }
 
         public override void ShowSnapshot(OmenHub.Hardware.Sensors.SensorSnapshot snapshot)

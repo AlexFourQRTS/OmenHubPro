@@ -27,9 +27,15 @@ namespace OmenHub.Ui.Pages
             liveLabel = PageKit.MakeLabel(this, "", 20, 86, 9, false, PageKit.RoleSub);
             biosLabel = PageKit.MakeLabel(this, "", 20, 102, 8.5f, false, PageKit.RoleSub);
 
-            limitSegments.SelectionChanged += delegate { AppSettings.GpuLimitEnabled = limitSegments.SelectedIndex == 1; AppSettings.MarkChanged(); };
+            limitSegments.SelectionChanged += delegate
+            {
+                if (AppSettings.ProAutoEnabled) { LoadFromSettings(); return; }   // the profile decides
+                AppSettings.GpuLimitEnabled = limitSegments.SelectedIndex == 1;
+                AppSettings.MarkChanged();
+            };
             wattsSlider.ValueChanged += delegate
             {
+                if (AppSettings.ProAutoEnabled) { LoadFromSettings(); return; }
                 AppSettings.GpuWatts = wattsSlider.Value;
                 wattsLabel.Text = wattsSlider.Value + " Вт";
                 AppSettings.MarkChanged();
@@ -39,8 +45,9 @@ namespace OmenHub.Ui.Pages
 
         public void LoadFromSettings()
         {
-            limitSegments.SelectedIndex = AppSettings.GpuLimitEnabled ? 1 : 0;
-            wattsSlider.Value = AppSettings.GpuWatts;
+            bool profileLocked = AppSettings.ProAutoEnabled;
+            limitSegments.SelectedIndex = (profileLocked || AppSettings.GpuLimitEnabled) ? 1 : 0;
+            wattsSlider.Value = profileLocked ? AppSettings.ProAutoGpuWatts : AppSettings.GpuWatts;
             wattsLabel.Text = wattsSlider.Value + " Вт";
             biosLabel.Text = "Режим BIOS:  " + BiosSystemCommands.DescribeGpuPowerMode();
         }

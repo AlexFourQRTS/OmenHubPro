@@ -15,7 +15,7 @@ namespace OmenHub
             using (var mx = new Mutex(true, "OmenHub.SingleInstance", out created))
             {
                 if (!created) return;
-                Cfg.Load(); Th.Set(Cfg.Dark);
+                Cfg.Load(); Th.Set(Cfg.Dark); Prio.Apply();
                 AppDomain.CurrentDomain.UnhandledException += delegate (object s, UnhandledExceptionEventArgs ev) { Log.W("UNHANDLED: " + ev.ExceptionObject); try { Bios.SetFanMax(false); } catch { } };
                 Application.ThreadException += delegate (object s, ThreadExceptionEventArgs ev) { Log.W("UI EXCEPTION: " + ev.Exception); };
                 Engine.Start();
@@ -41,7 +41,7 @@ namespace OmenHub
         // fans
         Seg segMode, segFan, segSrc; Slider slCpu, slGpu; Label lSlCpu, lSlGpu; Curve curve; Label modeInfo;
         // power / cpu
-        Label lGpuFlags, lCpuW; Slider slCpuW; TextBox tbRyzen; Seg segPro;
+        Label lGpuFlags, lCpuW; Slider slCpuW; TextBox tbRyzen; Seg segPro, segAuto; Label lAutoRes;
         Seg segTheme;
 
         public MainForm()
@@ -49,6 +49,7 @@ namespace OmenHub
             Text = "OmenHub"; ClientSize = new Size(1060, 700);
             FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false; StartPosition = FormStartPosition.CenterScreen;
             DoubleBuffered = true;
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "/autostart") >= 0) WindowState = FormWindowState.Minimized;
 
             side = new Panel { Dock = DockStyle.Left, Width = 210 }; Controls.Add(side);
             head = new Panel { Dock = DockStyle.Top, Height = 64 }; Controls.Add(head);
@@ -335,13 +336,27 @@ namespace OmenHub
 
         void BuildSettings(Panel pg)
         {
-            var c = MkCard(pg, 24, 16, 802, 250, "Настройки");
+            var c = MkCard(pg, 24, 16, 802, 220, "Настройки");
             Lb(c, "Тема", 20, 58, 9.5f, false, "sub");
             segTheme = new Seg { Left = 120, Top = 52, Width = 260, Items = new[] { "Тёмная", "Светлая" }, Sel = Cfg.Dark ? 0 : 1 }; c.Controls.Add(segTheme);
             segTheme.Changed += delegate { Cfg.Dark = segTheme.Sel == 0; ApplyTheme(); dirty = true; };
             var b = Button(c, "Вернуть вентиляторы под контроль BIOS", 20, 112, 330, false);
             b.Click += delegate { Cfg.FanMode = 0; segMode.Sel = 0; ModeText(); Bios.SetFanMax(false); dirty = true; };
             Lb(c, "При закрытии программы вентиляторы автоматически возвращаются в режим BIOS.\nНастройки: %APPDATA%\\OmenHub\\settings.ini", 20, 170, 9, false, "sub");
+
+            var s2 = MkCard(pg, 24, 252, 802, 210, "Запуск и приоритет");
+            Lb(s2, "Автозапуск", 20, 58, 9.5f, false, "sub");
+            segAuto = new Seg { Left = 140, Top = 52, Width = 360, Items = new[] { "Выключен", "При входе в Windows" }, Sel = Autostart.IsOn() ? 1 : 0 }; s2.Controls.Add(segAuto);
+            lAutoRes = Lb(s2, "", 520, 60, 9, false, "sub");
+            segAuto.Changed += delegate
+            {
+                string err = segAuto.Sel == 1 ? Autostart.Enable() : Autostart.Disable();
+                bool on = Autostart.IsOn();
+                segAuto.Sel = on ? 1 : 0;
+                lAutoRes.Text = err.Length == 0 ? (on ? "Включено: задача планировщика «OmenHub»" : "Выключено") : Short(err);
+            };
+            Lb(s2, "Запускается от имени администратора без запроса UAC (задача с наивысшими правами), работает и от батареи.\nПри автозапуске окно стартует свёрнутым.", 20, 106, 9, false, "sub");
+            Lb(s2, "Приоритет: процесс — «Высокий», поток управления кулерами — наивысший, «режим эффективности» Windows отключён.\nReal-time намеренно не используется: он может подвесить систему.", 20, 150, 9, false, "sub");
         }
 
         // ------------------------------------------------------------ live update

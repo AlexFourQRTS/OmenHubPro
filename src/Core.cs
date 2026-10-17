@@ -262,6 +262,84 @@ namespace OmenHub
     }
 
 
+
+    // ---------------------------------------------------------------- autostart + priority
+    static class Autostart
+    {
+        const string TaskName = "OmenHub";
+
+        public static bool IsOn()
+        {
+            int code; Proc.RunCode("schtasks", "/Query /TN " + TaskName, 8000, out code);
+            return code == 0;
+        }
+
+        static string Esc(string s) { return System.Security.SecurityElement.Escape(s); }
+
+        public static string Enable()
+        {
+            try
+            {
+                string user = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+                string exe = System.Windows.Forms.Application.ExecutablePath;
+                string xml =
+"<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n" +
+"<Task version=\"1.4\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n" +
+"  <RegistrationInfo><Description>OmenHub autostart (elevated, no UAC prompt)</Description></RegistrationInfo>\r\n" +
+"  <Triggers><LogonTrigger><Enabled>true</Enabled><UserId>" + Esc(user) + "</UserId><Delay>PT10S</Delay></LogonTrigger></Triggers>\r\n" +
+"  <Principals><Principal id=\"Author\"><UserId>" + Esc(user) + "</UserId><LogonType>InteractiveToken</LogonType><RunLevel>HighestAvailable</RunLevel></Principal></Principals>\r\n" +
+"  <Settings>\r\n" +
+"    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n" +
+"    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n" +
+"    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n" +
+"    <AllowHardTerminate>false</AllowHardTerminate>\r\n" +
+"    <StartWhenAvailable>true</StartWhenAvailable>\r\n" +
+"    <AllowStartOnDemand>true</AllowStartOnDemand>\r\n" +
+"    <Enabled>true</Enabled>\r\n" +
+"    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n" +
+"    <Priority>1</Priority>\r\n" +
+"  </Settings>\r\n" +
+"  <Actions Context=\"Author\"><Exec><Command>" + Esc(exe) + "</Command><Arguments>/autostart</Arguments><WorkingDirectory>" + Esc(Path.GetDirectoryName(exe)) + "</WorkingDirectory></Exec></Actions>\r\n" +
+"</Task>\r\n";
+                string tmp = Path.Combine(Path.GetTempPath(), "omenhub-task.xml");
+                File.WriteAllText(tmp, xml, Encoding.Unicode);
+                int code; string o = Proc.RunCode("schtasks", "/Create /TN " + TaskName + " /XML \"" + tmp + "\" /F", 15000, out code);
+                try { File.Delete(tmp); } catch { }
+                Log.W("autostart enable -> exit=" + code + " " + o);
+                return code == 0 ? "" : o;
+            }
+            catch (Exception e) { Log.W("autostart enable EXC " + e.Message); return e.Message; }
+        }
+
+        public static string Disable()
+        {
+            int code; string o = Proc.RunCode("schtasks", "/Delete /TN " + TaskName + " /F", 10000, out code);
+            Log.W("autostart disable -> exit=" + code + " " + o);
+            return code == 0 ? "" : o;
+        }
+    }
+
+    static class Prio
+    {
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        struct PowerThrottling { public uint Version; public uint ControlMask; public uint StateMask; }
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern bool SetProcessInformation(IntPtr h, int cls, ref PowerThrottling info, int size);
+        [System.Runtime.InteropServices.DllImport("winmm.dll")] static extern uint timeBeginPeriod(uint ms);
+
+        // High priority (not Realtime: Realtime can starve the input/system threads and freeze the machine)
+        public static void Apply()
+        {
+            try { Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High; } catch (Exception e) { Log.W("priority EXC " + e.Message); }
+            try
+            {
+                var pt = new PowerThrottling { Version = 1, ControlMask = 1, StateMask = 0 };   // EXECUTION_SPEED throttling OFF
+                SetProcessInformation(Process.GetCurrentProcess().Handle, 4, ref pt, System.Runtime.InteropServices.Marshal.SizeOf(pt));
+            }
+            catch { }
+            try { timeBeginPeriod(1); } catch { }
+            Log.W("priority: " + Process.GetCurrentProcess().PriorityClass + ", power throttling off");
+        }
+    }
     // ---------------------------------------------------------------- RyzenAdj wrapper
     static class RyzenAdj
     {
@@ -319,7 +397,7 @@ namespace OmenHub
             catch { }
             try { zoneSearch = new ManagementObjectSearcher(@"root\cimv2", "select Name,Temperature from Win32_PerfFormattedData_Counters_ThermalZoneInformation"); } catch { }
             run = true;
-            th = new Thread(Loop); th.IsBackground = true; th.Start();
+            th = new Thread(Loop); th.IsBackground = true; th.Priority = ThreadPriority.Highest; th.Start();
         }
 
         public static void Stop()

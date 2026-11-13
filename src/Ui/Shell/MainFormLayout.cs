@@ -39,6 +39,44 @@ namespace OmenHub.Ui.Shell
             titleLabel = PageKit.MakeLabel(header, "", 28, 16, 17, true, PageKit.RoleText);
             statusLabel = PageKit.MakeLabel(header, "", 28, 44, 8.5f, false, PageKit.RoleSub);
             BuildFanChips();
+            BuildHeaderButtons();
+        }
+
+        private IconButton themeButton, autostartButton;
+
+        private void BuildHeaderButtons()
+        {
+            themeButton = new IconButton { Icon = IconButton.Glyph.Theme, Top = 12, Anchor = AnchorStyles.Top | AnchorStyles.Right };
+            autostartButton = new IconButton { Icon = IconButton.Glyph.Power, Top = 12, Anchor = AnchorStyles.Top | AnchorStyles.Right };
+            header.Controls.Add(themeButton);
+            header.Controls.Add(autostartButton);
+            var hints = new ToolTip();
+            hints.SetToolTip(themeButton, "Светлая / тёмная тема");
+            hints.SetToolTip(autostartButton, "Автозапуск с Windows");
+            EventHandler place = delegate
+            {
+                themeButton.Left = header.Width - 100;
+                autostartButton.Left = header.Width - 52;
+            };
+            header.Resize += place;
+            Load += place;
+            themeButton.IsOn = AppSettings.DarkTheme;
+            autostartButton.IsOn = OmenHub.Startup.AutostartTask.IsEnabled();
+            themeButton.Click += delegate
+            {
+                AppSettings.DarkTheme = !AppSettings.DarkTheme;
+                Palette.Apply(AppSettings.DarkTheme);
+                ThemeApplier.Apply(this);
+                themeButton.IsOn = AppSettings.DarkTheme;
+                AppSettings.MarkChanged();
+            };
+            autostartButton.Click += delegate
+            {
+                if (OmenHub.Startup.AutostartTask.IsEnabled()) OmenHub.Startup.AutostartTask.Disable();
+                else OmenHub.Startup.AutostartTask.Enable();
+                autostartButton.IsOn = OmenHub.Startup.AutostartTask.IsEnabled();
+                autostartButton.Invalidate();
+            };
         }
 
         private void BuildFanChips()
@@ -49,8 +87,8 @@ namespace OmenHub.Ui.Shell
             header.Controls.Add(gpuFanChip);
             EventHandler placeChips = delegate
             {
-                cpuFanChip.Left = header.Width - 370;
-                gpuFanChip.Left = header.Width - 186;
+                cpuFanChip.Left = header.Width - 470;
+                gpuFanChip.Left = header.Width - 286;
             };
             header.Resize += placeChips;
             Load += placeChips;

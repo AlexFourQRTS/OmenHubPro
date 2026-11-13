@@ -9,10 +9,6 @@ namespace OmenHub.Core.Settings
     /// <summary>The single source of truth for user configuration. Persistence lives in SettingsStorage.</summary>
     public static class AppSettings
     {
-        public const int ProAutoWatts = 40;
-        public const int BatteryWatts = 20;
-        public const int BatteryGpuWatts = 30;   // GPU limit while on battery (with the battery economy profile)
-        public const int ProAutoGpuWatts = 100;  // GPU limit of the "Pro auto" profile on mains
         public const int MaximumFanRpm = 6000;
 
         public static bool DarkTheme = true;
@@ -22,7 +18,6 @@ namespace OmenHub.Core.Settings
         public static readonly int[] CpuWattChoices = { 20, 40, 50, 60 };
         public static readonly int[] GpuWattChoices = { 50, 80, 100, 130 };
         public static int CpuWatts = 40;
-        public static bool ProAutoEnabled = true;
         public static volatile bool LabEnabled = false;   // shows the lighting laboratory page in the menu
 
         public static volatile int GpuWatts = 100;
@@ -53,14 +48,6 @@ namespace OmenHub.Core.Settings
 
         public static void MarkChanged() { hasUnsavedChanges = true; }
 
-        /// <summary>Leaves the Pro auto profile but keeps its values as manual limits, so one value can be changed alone.</summary>
-        public static void LeaveProAuto()
-        {
-            if (!ProAutoEnabled) return;
-            ProAutoEnabled = false;
-            CpuWatts = ProAutoWatts;
-            GpuWatts = ProAutoGpuWatts;
-        }
 
         /// <summary>Returns true once after each change so a timer can persist it.</summary>
         public static bool TakeUnsavedFlag()

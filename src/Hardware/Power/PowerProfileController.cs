@@ -6,8 +6,7 @@ using OmenHub.Hardware.Sensors;
 namespace OmenHub.Hardware.Power
 {
     /// <summary>
-    /// CPU power profile: on battery the limit is BatteryWatts, on AC it is ProAutoWatts (when enabled),
-    /// otherwise the controller leaves the CPU alone. A changed target is applied at once and
+    /// CPU power: applies the chosen wattage. A changed target is applied at once and
     /// re-verified every 30 seconds because firmware may reset the limit.
     /// </summary>
     public sealed class PowerProfileController
@@ -21,7 +20,7 @@ namespace OmenHub.Hardware.Power
 
         public void Apply(SensorSnapshot snapshot)
         {
-            int targetWatts = ChooseTarget(snapshot.OnBattery);
+            int targetWatts = AppSettings.CpuWatts;
             if (targetWatts == NoTarget) { appliedTargetWatts = NoTarget; return; }
             if (!RyzenAdjTool.IsPresent) return;
 
@@ -35,15 +34,9 @@ namespace OmenHub.Hardware.Power
             if (double.IsNaN(currentWatts) || Math.Abs(currentWatts - targetWatts) > ToleranceWatts)
             {
                 RyzenAdjTool.SetPowerLimit(targetWatts);
-                AppLog.Write("PowerProfile: " + (snapshot.OnBattery ? "battery" : "AC") + " -> " + targetWatts + " W (was " + currentWatts + ")");
+                AppLog.Write("PowerProfile: " + "CPU" + " -> " + targetWatts + " W (was " + currentWatts + ")");
             }
         }
 
-        private static int ChooseTarget(bool onBattery)
-        {
-            if (onBattery) return AppSettings.BatteryWatts;
-            if (AppSettings.ProAutoEnabled) return AppSettings.ProAutoWatts;
-            return AppSettings.CpuWatts;
-        }
     }
 }

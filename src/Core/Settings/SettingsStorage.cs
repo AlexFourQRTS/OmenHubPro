@@ -30,7 +30,6 @@ namespace OmenHub.Core.Settings
                 text.AppendLine("ManCpu=" + AppSettings.ManualCpuFanRpm);
                 text.AppendLine("ManGpu=" + AppSettings.ManualGpuFanRpm);
                 text.AppendLine("CpuW=" + AppSettings.CpuWatts);
-                text.AppendLine("ProAuto=" + (AppSettings.ProAutoEnabled ? 1 : 0));
                 text.AppendLine("BarZones=" + BarZoneStorage.Serialize());
                 text.AppendLine("BarBright=" + AppSettings.BarBrightnessPercent);
                 text.AppendLine("BarOn=" + (AppSettings.BarEnabled ? 1 : 0));
@@ -54,7 +53,6 @@ namespace OmenHub.Core.Settings
                 AppSettings.ManualCpuFanRpm = ReadNumber(values, "ManCpu", AppSettings.ManualCpuFanRpm);
                 AppSettings.ManualGpuFanRpm = ReadNumber(values, "ManGpu", AppSettings.ManualGpuFanRpm);
                 AppSettings.CpuWatts = AppSettings.Snap(AppSettings.CpuWattChoices, ReadNumber(values, "CpuW", AppSettings.CpuWatts));
-                AppSettings.ProAutoEnabled = ReadNumber(values, "ProAuto", 1) == 1;
                 AppSettings.BarEnabled = ReadNumber(values, "BarOn", 1) == 1;
                 AppSettings.LabEnabled = ReadNumber(values, "Lab", 0) == 1;
                 AppSettings.GpuWatts = AppSettings.Snap(AppSettings.GpuWattChoices, ReadNumber(values, "GpuW", 100));

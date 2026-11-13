@@ -9,7 +9,6 @@ namespace OmenHub.Ui.Pages
 {
     /// <summary>
     /// GPU power: one of 50 / 80 / 100 / 130 W, held by the governor through the graphics clock ceiling.
-    /// Choosing a value while "Pro auto" is on switches the profile to manual and keeps the profile's CPU value.
     /// </summary>
     public sealed class GpuPowerCard : CardPanel
     {
@@ -17,8 +16,6 @@ namespace OmenHub.Ui.Pages
         private readonly Label liveLabel;
         private readonly Label biosLabel;
 
-        /// <summary>Raised when the card left the Pro auto profile, so the other power cards can refresh.</summary>
-        public event EventHandler ProfileLeft;
 
         public GpuPowerCard(int top)
         {
@@ -30,17 +27,14 @@ namespace OmenHub.Ui.Pages
             LoadFromSettings();
             wattSegments.SelectionChanged += delegate
             {
-                bool leftProfile = AppSettings.ProAutoEnabled;
-                if (leftProfile) AppSettings.LeaveProAuto();
                 AppSettings.GpuWatts = AppSettings.GpuWattChoices[wattSegments.SelectedIndex];
                 AppSettings.MarkChanged();
-                if (leftProfile && ProfileLeft != null) ProfileLeft(this, EventArgs.Empty);
             };
         }
 
         public void LoadFromSettings()
         {
-            int watts = AppSettings.ProAutoEnabled ? AppSettings.ProAutoGpuWatts : AppSettings.GpuWatts;
+            int watts = AppSettings.GpuWatts;
             wattSegments.SelectedIndex = Array.IndexOf(AppSettings.GpuWattChoices, AppSettings.Snap(AppSettings.GpuWattChoices, watts));
             biosLabel.Text = "Режим BIOS:  " + BiosSystemCommands.DescribeGpuPowerMode();
         }

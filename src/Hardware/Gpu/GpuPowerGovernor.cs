@@ -74,14 +74,9 @@ namespace OmenHub.Hardware.Gpu
             if (gpu != null) { gpu.UnlockClocks(); gpu.Dispose(); AppLog.Write("GPU governor: clocks unlocked on exit"); }
         }
 
-        /// <summary>The target in watts: the economy profile on battery, the Pro auto profile on mains, otherwise the user limit (0 = no limit).</summary>
+        /// <summary>The target in watts: the value chosen on the power page.</summary>
         private static int TargetWatts()
         {
-            bool onBattery;
-            try { onBattery = System.Windows.Forms.SystemInformation.PowerStatus.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Offline; }
-            catch { onBattery = false; }
-            if (onBattery) return AppSettings.BatteryGpuWatts;
-            if (AppSettings.ProAutoEnabled) return AppSettings.ProAutoGpuWatts;
             return AppSettings.GpuWatts;
         }
 

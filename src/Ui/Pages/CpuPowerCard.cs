@@ -9,7 +9,6 @@ namespace OmenHub.Ui.Pages
 {
     /// <summary>
     /// CPU power: one of 20 / 40 / 50 / 60 W, applied by the engine within a moment.
-    /// Choosing a value while "Pro auto" is on switches the profile to manual and keeps the profile's GPU value.
     /// When the processor cannot be reached (driver missing or blocked) a short red note says so.
     /// </summary>
     public sealed class CpuPowerCard : CardPanel
@@ -17,8 +16,6 @@ namespace OmenHub.Ui.Pages
         private readonly SegmentedControl wattSegments;
         private readonly Label statusLabel;
 
-        /// <summary>Raised when the card left the Pro auto profile, so the other power cards can refresh.</summary>
-        public event EventHandler ProfileLeft;
 
         public CpuPowerCard(int top)
         {
@@ -29,17 +26,14 @@ namespace OmenHub.Ui.Pages
             LoadFromSettings();
             wattSegments.SelectionChanged += delegate
             {
-                bool leftProfile = AppSettings.ProAutoEnabled;
-                if (leftProfile) AppSettings.LeaveProAuto();
                 AppSettings.CpuWatts = AppSettings.CpuWattChoices[wattSegments.SelectedIndex];
                 AppSettings.MarkChanged();
-                if (leftProfile && ProfileLeft != null) ProfileLeft(this, EventArgs.Empty);
             };
         }
 
         public void LoadFromSettings()
         {
-            int watts = AppSettings.ProAutoEnabled ? AppSettings.ProAutoWatts : AppSettings.CpuWatts;
+            int watts = AppSettings.CpuWatts;
             wattSegments.SelectedIndex = Array.IndexOf(AppSettings.CpuWattChoices, AppSettings.Snap(AppSettings.CpuWattChoices, watts));
         }
 

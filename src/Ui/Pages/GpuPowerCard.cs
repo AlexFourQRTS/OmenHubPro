@@ -4,7 +4,7 @@ using OmenHub.Ui.Controls;
 
 namespace OmenHub.Ui.Pages
 {
-    /// <summary>GPU power: one of 50 / 80 / 100 / 130 W, held by the governor through the graphics clock ceiling.</summary>
+    /// <summary>GPU power: one of 50 / 80 / 100 / 120 W, held by the governor through the graphics clock ceiling.</summary>
     public sealed class GpuPowerCard : CardPanel
     {
         private readonly SegmentedControl wattSegments;

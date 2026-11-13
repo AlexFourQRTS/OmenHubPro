@@ -10,7 +10,7 @@ namespace OmenHub.Hardware.Sensors
     /// </summary>
     public static class CpuPackageSensor
     {
-        private const int IntervalMilliseconds = 2000;
+        private const int IntervalMilliseconds = 1000;
         private const int IdleMilliseconds = 500;
         private static Thread workerThread;
 

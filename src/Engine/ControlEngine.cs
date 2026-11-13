@@ -11,7 +11,7 @@ namespace OmenHub.Engine
     /// <summary>Background loop: read sensors, apply fan mode, apply power profile. Runs at highest thread priority.</summary>
     public static class ControlEngine
     {
-        private const int CycleMilliseconds = 1500;
+        private const int CycleMilliseconds = 500;
         private const int SleepSliceMilliseconds = 100;
         private const int StopTimeoutMilliseconds = 3000;
 

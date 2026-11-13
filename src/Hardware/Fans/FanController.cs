@@ -12,8 +12,8 @@ namespace OmenHub.Hardware.Fans
         private const int ReassertMaxSeconds = 20;
         private const int ReassertLevelSeconds = 10;
         private const int AlertReassertSeconds = 8;
-        private const int RampUpRpmPerCycle = 800;
-        private const int RampDownRpmPerCycle = 200;
+        private const int RampUpRpmPerCycle = 270;
+        private const int RampDownRpmPerCycle = 70;
         private const int NoMode = -99;
 
         private readonly ThermalAlert alert = new ThermalAlert();

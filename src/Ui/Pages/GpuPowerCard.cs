@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using OmenHub.Core.Settings;
@@ -7,7 +8,10 @@ using OmenHub.Ui.Controls;
 
 namespace OmenHub.Ui.Pages
 {
-    /// <summary>GPU power target in watts (30-140, step 5), held by the governor through the graphics clock ceiling.</summary>
+    /// <summary>
+    /// GPU power target in watts (30-130, step 5), held by the governor through the graphics clock ceiling.
+    /// Touching it while "Pro auto" is on switches the profile to manual and keeps the profile's values.
+    /// </summary>
     public sealed class GpuPowerCard : CardPanel
     {
         private readonly SegmentedControl limitSegments;
@@ -15,6 +19,9 @@ namespace OmenHub.Ui.Pages
         private readonly Label wattsLabel;
         private readonly Label liveLabel;
         private readonly Label biosLabel;
+
+        /// <summary>Raised when the card left the Pro auto profile, so the other power cards can refresh.</summary>
+        public event EventHandler ProfileLeft;
 
         public GpuPowerCard(int top)
         {
@@ -29,14 +36,16 @@ namespace OmenHub.Ui.Pages
 
             limitSegments.SelectionChanged += delegate
             {
-                if (AppSettings.ProAutoEnabled) { LoadFromSettings(); return; }   // the profile decides
+                LeaveProfile();
                 AppSettings.GpuLimitEnabled = limitSegments.SelectedIndex == 1;
                 AppSettings.MarkChanged();
             };
             wattsSlider.ValueChanged += delegate
             {
-                if (AppSettings.ProAutoEnabled) { LoadFromSettings(); return; }
+                LeaveProfile();
                 AppSettings.GpuWatts = wattsSlider.Value;
+                AppSettings.GpuLimitEnabled = true;
+                limitSegments.SelectedIndex = 1;
                 wattsLabel.Text = wattsSlider.Value + " Вт";
                 AppSettings.MarkChanged();
             };
@@ -45,9 +54,9 @@ namespace OmenHub.Ui.Pages
 
         public void LoadFromSettings()
         {
-            bool profileLocked = AppSettings.ProAutoEnabled;
-            limitSegments.SelectedIndex = (profileLocked || AppSettings.GpuLimitEnabled) ? 1 : 0;
-            wattsSlider.Value = profileLocked ? AppSettings.ProAutoGpuWatts : AppSettings.GpuWatts;
+            bool profileOn = AppSettings.ProAutoEnabled;
+            limitSegments.SelectedIndex = (profileOn || AppSettings.GpuLimitEnabled) ? 1 : 0;
+            wattsSlider.Value = profileOn ? AppSettings.ProAutoGpuWatts : AppSettings.GpuWatts;
             wattsLabel.Text = wattsSlider.Value + " Вт";
             biosLabel.Text = "Режим BIOS:  " + BiosSystemCommands.DescribeGpuPowerMode();
         }
@@ -58,6 +67,13 @@ namespace OmenHub.Ui.Pages
             int cap = GpuPowerGovernor.LockedCapMhz;
             liveLabel.Text = "Сейчас: " + (watts < 0 ? "—" : watts.ToString("0.0") + " Вт")
                 + "    потолок частоты: " + (cap == 0 ? "нет" : cap + " МГц");
+        }
+
+        private void LeaveProfile()
+        {
+            if (!AppSettings.ProAutoEnabled) return;
+            AppSettings.LeaveProAuto();
+            if (ProfileLeft != null) ProfileLeft(this, EventArgs.Empty);
         }
     }
 }

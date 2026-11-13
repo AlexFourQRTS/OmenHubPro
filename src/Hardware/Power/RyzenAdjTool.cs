@@ -17,6 +17,9 @@ namespace OmenHub.Hardware.Power
             get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"tools\ryzenadj\ryzenadj.exe"); }
         }
 
+        /// <summary>True when the last call could not reach the processor (driver missing or blocked).</summary>
+        public static volatile bool DriverFailed;
+
         public static bool IsPresent { get { return File.Exists(ExecutablePath); } }
 
         public static string Run(string arguments, out int exitCode, bool writeLog = true)
@@ -28,8 +31,14 @@ namespace OmenHub.Hardware.Power
                 return "Не найден " + ExecutablePath;
             }
             string output = ProcessRunner.RunWithExitCode(ExecutablePath, arguments, TimeoutMilliseconds, out exitCode);
-            string shown = output.Length > MaximumLoggedCharacters ? output.Substring(0, MaximumLoggedCharacters) + "..." : output;
-            AppLog.Write("ryzenadj " + arguments + "  -> exit=" + exitCode + "\r\n" + shown);
+            bool driverFailed = exitCode == -1 || output.IndexOf("Unable to init", StringComparison.OrdinalIgnoreCase) >= 0
+                || output.IndexOf("driver", StringComparison.OrdinalIgnoreCase) >= 0 && exitCode != 0 && exitCode != unchecked((int)0xC0000005);
+            DriverFailed = driverFailed;
+            if (writeLog)
+            {
+                string shown = output.Length > MaximumLoggedCharacters ? output.Substring(0, MaximumLoggedCharacters) + "..." : output;
+                AppLog.Write("ryzenadj " + arguments + "  -> exit=" + exitCode + "\r\n" + shown);
+            }
             return output;
         }
 

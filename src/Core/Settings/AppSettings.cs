@@ -35,7 +35,7 @@ namespace OmenHub.Core.Settings
         public static volatile bool LabEnabled = false;   // shows the lighting laboratory page in the menu
 
         public const int MinimumGpuWatts = 30;
-        public const int MaximumGpuWatts = 140;
+        public const int MaximumGpuWatts = 130;   // the card supports 140 W, more than 130 makes no sense
         public const int GpuWattsStep = 5;
         public static volatile bool GpuLimitEnabled = false;
         public static volatile int GpuWatts = 80;
@@ -67,6 +67,15 @@ namespace OmenHub.Core.Settings
         private static volatile bool hasUnsavedChanges;
 
         public static void MarkChanged() { hasUnsavedChanges = true; }
+
+        /// <summary>Leaves the Pro auto profile but keeps its values as manual limits, so one value can be changed alone.</summary>
+        public static void LeaveProAuto()
+        {
+            if (!ProAutoEnabled) return;
+            ProAutoEnabled = false;
+            CpuWatts = ProAutoWatts; CpuLimitEnabled = true;
+            GpuWatts = ProAutoGpuWatts; GpuLimitEnabled = true;
+        }
 
         /// <summary>Returns true once after each change so a timer can persist it.</summary>
         public static bool TakeUnsavedFlag()

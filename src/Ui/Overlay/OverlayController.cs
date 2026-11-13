@@ -9,7 +9,7 @@ using OmenHub.Hardware.Sensors;
 
 namespace OmenHub.Ui.Overlay
 {
-    /// <summary>Shows the overlay according to the settings (switch, mode, corner) and redraws it once per second.</summary>
+    /// <summary>Shows the overlay according to the settings (switch, mode, corner) and redraws it three times per second.</summary>
     public sealed class OverlayController : IDisposable
     {
         private const int MarginPixels = 20;
@@ -18,7 +18,7 @@ namespace OmenHub.Ui.Overlay
 
         public OverlayController()
         {
-            timer.Interval = 1000;
+            timer.Interval = 333;
             timer.Tick += delegate { Refresh(); };
             timer.Start();
         }

@@ -21,6 +21,7 @@ namespace OmenHub.Hardware.Gpu
         [DllImport("nvml.dll")] private static extern int nvmlDeviceGetUtilizationRates(IntPtr device, out Utilization utilization);
         [DllImport("nvml.dll")] private static extern int nvmlDeviceSetGpuLockedClocks(IntPtr device, uint minimumMegahertz, uint maximumMegahertz);
         [DllImport("nvml.dll")] private static extern int nvmlDeviceResetGpuLockedClocks(IntPtr device);
+        [DllImport("nvml.dll")] private static extern int nvmlDeviceGetEnforcedPowerLimit(IntPtr device, out uint milliwatts);
 
         public static NvmlGpu TryOpen()
         {
@@ -42,6 +43,13 @@ namespace OmenHub.Hardware.Gpu
         {
             uint milliwatts;
             return nvmlDeviceGetPowerUsage(device, out milliwatts) == 0 ? milliwatts / 1000.0 : -1;
+        }
+
+        /// <summary>The power limit the driver enforces right now (set by the BIOS, moves with the platform power budget).</summary>
+        public double ReadEnforcedLimitWatts()
+        {
+            uint milliwatts;
+            return nvmlDeviceGetEnforcedPowerLimit(device, out milliwatts) == 0 ? milliwatts / 1000.0 : -1;
         }
 
         public int ReadClockMhz()

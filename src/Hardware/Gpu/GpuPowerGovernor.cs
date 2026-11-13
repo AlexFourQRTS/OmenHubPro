@@ -23,6 +23,7 @@ namespace OmenHub.Hardware.Gpu
 
         private static Thread workerThread;
         private static volatile bool running;
+        private static DateTime lastDiagnostic = DateTime.MinValue;
 
         /// <summary>Latest measurements for the UI (-1 = unknown).</summary>
         public static volatile int LockedCapMhz = 0;
@@ -68,6 +69,12 @@ namespace OmenHub.Hardware.Gpu
                         appliedCap = (int)cap;
                         LockedCapMhz = appliedCap;
                     }
+                }
+                if (MeasuredWatts > 40 && (DateTime.Now - lastDiagnostic).TotalSeconds >= 3)
+                {
+                    lastDiagnostic = DateTime.Now;
+                    AppLog.Write("GPU: " + MeasuredWatts.ToString("0.0") + " W, target " + targetWatts + " W, driver limit "
+                        + gpu.ReadEnforcedLimitWatts().ToString("0.0") + " W, clock " + gpu.ReadClockMhz() + " MHz, cap " + LockedCapMhz + " MHz");
                 }
                 Thread.Sleep(LoopMilliseconds);
             }

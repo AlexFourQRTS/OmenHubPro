@@ -19,6 +19,7 @@ namespace OmenHub.Hardware.Fans
         private int lastCpuRpm = -1;
         private int lastGpuRpm = -1;
         private DateTime lastCommandTime = DateTime.MinValue;
+        private DateTime lastDiagnostic = DateTime.MinValue;
 
         public void Apply(SensorSnapshot snapshot)
         {
@@ -45,6 +46,11 @@ namespace OmenHub.Hardware.Fans
             int cpuRpm = Math.Max(AppSettings.ManualCpuFanRpm, floor);
             int gpuRpm = Math.Max(AppSettings.ManualGpuFanRpm, floor);
             SendLevelIfNeeded(cpuRpm, gpuRpm, modeChanged);
+            if ((DateTime.Now - lastDiagnostic).TotalSeconds >= 5)
+            {
+                lastDiagnostic = DateTime.Now;
+                AppLog.Write("Fans: asked " + cpuRpm + "/" + gpuRpm + ", real " + snapshot.CpuFanRpm + "/" + snapshot.GpuFanRpm + " rpm, hottest " + (int)hottest + " C");
+            }
         }
 
         private void SwitchMode(FanMode mode)

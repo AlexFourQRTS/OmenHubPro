@@ -5,7 +5,7 @@ using OmenHub.Ui.Theme;
 
 namespace OmenHub.Ui.Controls
 {
-    /// <summary>Sidebar navigation entry with an orange marker on the active page.</summary>
+    /// <summary>Sidebar navigation entry in Google style: a rounded pill marks the active page.</summary>
     public class NavButton : Control
     {
         private bool isHovered;
@@ -28,18 +28,15 @@ namespace OmenHub.Ui.Controls
             eventArgs.Graphics.Clear(Palette.Sidebar);
             if (IsActive || isHovered)
             {
-                var area = new RectangleF(8, 2, Width - 16, Height - 4);
-                int alpha = IsActive ? 40 : 18;
-                using (var path = UiDrawing.RoundedRectangle(area, 8))
-                using (var brush = new SolidBrush(Color.FromArgb(alpha, Palette.Accent)))
+                var area = new RectangleF(10, 2, Width - 20, Height - 4);
+                Color pill = IsActive ? Palette.SelectedFill : Palette.Border;
+                using (var path = UiDrawing.RoundedRectangle(area, (Height - 4) / 2f))
+                using (var brush = new SolidBrush(IsActive ? pill : Color.FromArgb(70, pill)))
                     eventArgs.Graphics.FillPath(brush, path);
             }
-            if (IsActive)
-                using (var marker = new SolidBrush(Palette.AccentSecondary))
-                    eventArgs.Graphics.FillRectangle(marker, 0, 10, 4, Height - 20);
 
             TextRenderer.DrawText(eventArgs.Graphics, Text, UiDrawing.GetFont(10.5f, IsActive), new Rectangle(24, 0, Width - 24, Height),
-                IsActive ? Palette.Text : Palette.SubText, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+                IsActive ? Palette.Accent : Palette.SubText, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
         }
     }
 }

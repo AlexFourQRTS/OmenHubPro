@@ -48,7 +48,7 @@ namespace OmenHub.Core.Settings
                 if (!File.Exists(FilePath)) return;
                 Dictionary<string, string> values = ReadKeyValues(File.ReadAllLines(FilePath));
 
-                AppSettings.DarkTheme = ReadNumber(values, "Dark", 1) == 1;
+                AppSettings.DarkTheme = ReadNumber(values, "Dark", 0) == 1;
                 AppSettings.Mode = (FanMode)Math.Max(0, Math.Min(2, ReadNumber(values, "FanMode", 0)));
                 AppSettings.ManualCpuFanRpm = ReadNumber(values, "ManCpu", AppSettings.ManualCpuFanRpm);
                 AppSettings.ManualGpuFanRpm = ReadNumber(values, "ManGpu", AppSettings.ManualGpuFanRpm);

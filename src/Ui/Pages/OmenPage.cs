@@ -8,7 +8,7 @@ namespace OmenHub.Ui.Pages
         private readonly FanModeCard modeCard = new FanModeCard();
         private readonly ManualFansCard manualCard = new ManualFansCard();
         private readonly GpuPowerCard gpuCard = new GpuPowerCard(298);
-        private readonly CpuPowerCard cpuCard = new CpuPowerCard(438);
+        private readonly CpuPowerCard cpuCard = new CpuPowerCard(406);
 
         public OmenPage()
         {
@@ -28,7 +28,6 @@ namespace OmenHub.Ui.Pages
 
         public override void ShowSnapshot(SensorSnapshot snapshot)
         {
-            gpuCard.ShowLive();
             cpuCard.ShowStatus();
         }
     }

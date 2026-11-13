@@ -11,7 +11,7 @@ namespace OmenHub.Core.Settings
     {
         public const int MaximumFanRpm = 6000;
 
-        public static bool DarkTheme = true;
+        public static bool DarkTheme = false;
         public static FanMode Mode = FanMode.Auto;
         public static int ManualCpuFanRpm = 2400;
         public static int ManualGpuFanRpm = 2400;

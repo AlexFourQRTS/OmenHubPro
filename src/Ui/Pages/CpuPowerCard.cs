@@ -19,10 +19,10 @@ namespace OmenHub.Ui.Pages
 
         public CpuPowerCard(int top)
         {
-            Left = 24; Top = top; Width = 802; Height = 112;
+            Left = 24; Top = top; Width = 802; Height = 92;
             PageKit.MakeLabel(this, "CPU power", 20, 12, 11, true, PageKit.RoleText);
-            wattSegments = PageKit.MakeSegments(this, 20, 46, 480, PowerChoices.Captions(AppSettings.CpuWattChoices), 0);
-            statusLabel = PageKit.MakeLabel(this, "", 20, 88, 9, true, PageKit.RoleText);
+            wattSegments = PageKit.MakeSegments(this, 20, 42, 480, PowerChoices.Captions(AppSettings.CpuWattChoices), 0);
+            statusLabel = PageKit.MakeLabel(this, "", 150, 14, 9, true, PageKit.RoleText);
             LoadFromSettings();
             wattSegments.SelectionChanged += delegate
             {

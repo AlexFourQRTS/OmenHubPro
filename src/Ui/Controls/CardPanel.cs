@@ -7,7 +7,7 @@ namespace OmenHub.Ui.Controls
     /// <summary>Rounded panel with a thin border; the basic container of every page.</summary>
     public class CardPanel : Panel
     {
-        private const float CornerRadius = 12;
+        private const float CornerRadius = 16;
 
         public CardPanel()
         {

@@ -71,9 +71,9 @@ namespace OmenHub.Ui.Controls
                 using (var gradient = new LinearGradientBrush(filledArea, Palette.Accent, Palette.GradientEnd, 0f))
                     eventArgs.Graphics.FillRectangle(gradient, filledArea);
             }
-            using (var thumb = new SolidBrush(Color.White))
+            using (var thumb = new SolidBrush(Palette.Accent))
                 eventArgs.Graphics.FillEllipse(thumb, thumbX - 9, centerY - 9, 18, 18);
-            using (var outline = new Pen(Palette.Accent, 3))
+            using (var outline = new Pen(Palette.CardSurface, 2))
                 eventArgs.Graphics.DrawEllipse(outline, thumbX - 8, centerY - 8, 16, 16);
         }
     }

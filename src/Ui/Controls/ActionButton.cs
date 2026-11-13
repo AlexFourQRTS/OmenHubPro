@@ -37,11 +37,11 @@ namespace OmenHub.Ui.Controls
             else if (isHovered) fill = ControlPaint.Light(fill, 0.15f);
 
             var area = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
-            using (var path = UiDrawing.RoundedRectangle(area, 8))
+            using (var path = UiDrawing.RoundedRectangle(area, Height / 2f))
             using (var brush = new SolidBrush(fill))
                 eventArgs.Graphics.FillPath(brush, path);
 
-            Color textColor = !Enabled ? Palette.SubText : IsAccent ? Color.White : Palette.Text;
+            Color textColor = !Enabled ? Palette.SubText : IsAccent ? Palette.OnAccent : Palette.Text;
             TextRenderer.DrawText(eventArgs.Graphics, Text, UiDrawing.GetFont(9.5f, true), new Rectangle(0, 0, Width, Height),
                 textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
         }

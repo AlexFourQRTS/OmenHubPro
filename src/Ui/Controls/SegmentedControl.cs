@@ -43,22 +43,22 @@ namespace OmenHub.Ui.Controls
             UiDrawing.SetHighQuality(eventArgs.Graphics);
             if (Parent != null) eventArgs.Graphics.Clear(Parent.BackColor);
             var outer = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
-            using (var path = UiDrawing.RoundedRectangle(outer, 10))
-            using (var brush = new SolidBrush(Palette.Track))
-                eventArgs.Graphics.FillPath(brush, path);
             if (Items.Length == 0) return;
 
             float segmentWidth = (Width - 4f) / Items.Length;
-            var selected = new RectangleF(2 + selectedIndex * segmentWidth, 2, segmentWidth, Height - 4);
-            using (var path = UiDrawing.RoundedRectangle(selected, 8))
-            using (var gradient = new LinearGradientBrush(selected, Palette.Accent, Palette.GradientEnd, 0f))
-                eventArgs.Graphics.FillPath(gradient, path);
+            var selected = new RectangleF(2 + selectedIndex * segmentWidth, 2.5f, segmentWidth, Height - 5);
+            using (var path = UiDrawing.RoundedRectangle(selected, selected.Height / 2f))
+            using (var brush = new SolidBrush(Palette.SelectedFill))
+                eventArgs.Graphics.FillPath(brush, path);
+            using (var path = UiDrawing.RoundedRectangle(outer, outer.Height / 2f))
+            using (var border = new Pen(Palette.Border))
+                eventArgs.Graphics.DrawPath(border, path);
 
             for (int index = 0; index < Items.Length; index++)
             {
                 var textArea = new Rectangle((int)(2 + index * segmentWidth), 0, (int)segmentWidth, Height);
                 TextRenderer.DrawText(eventArgs.Graphics, Items[index], UiDrawing.GetFont(9.5f, index == selectedIndex), textArea,
-                    index == selectedIndex ? Color.White : Palette.SubText,
+                    index == selectedIndex ? Palette.Accent : Palette.Text,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             }
         }

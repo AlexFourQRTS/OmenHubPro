@@ -31,7 +31,7 @@ namespace OmenHub.Ui.Controls
                 eventArgs.Graphics.FillPath(fill, path);
                 eventArgs.Graphics.DrawPath(border, path);
             }
-            using (var marker = new SolidBrush(IsAlert ? Palette.Bad : Palette.AccentSecondary))
+            using (var marker = new SolidBrush(IsAlert ? Palette.Bad : Palette.Accent))
                 eventArgs.Graphics.FillRectangle(marker, 0, 12, 3, Height - 24);
 
             TextRenderer.DrawText(eventArgs.Graphics, Title, UiDrawing.GetFont(8, false), new Rectangle(14, 5, Width - 20, 16),

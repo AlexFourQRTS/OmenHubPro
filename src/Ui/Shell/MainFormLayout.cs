@@ -36,7 +36,6 @@ namespace OmenHub.Ui.Shell
             Controls.Add(header);
 
             PageKit.MakeLabel(sidebar, "OMEN HUB", 24, 22, 15, true, PageKit.RoleText);
-            PageKit.MakeLabel(sidebar, "OMEN MAX 16", 26, 54, 8.5f, false, PageKit.RoleSub);
             titleLabel = PageKit.MakeLabel(header, "", 28, 16, 17, true, PageKit.RoleText);
             statusLabel = PageKit.MakeLabel(header, "", 28, 44, 8.5f, false, PageKit.RoleSub);
             BuildFanChips();

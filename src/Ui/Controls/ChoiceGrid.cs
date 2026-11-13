@@ -67,7 +67,7 @@ namespace OmenHub.Ui.Controls
                 using (var brush = new SolidBrush(selected ? Palette.Accent : Palette.Track))
                     eventArgs.Graphics.FillPath(brush, path);
                 TextRenderer.DrawText(eventArgs.Graphics, items[index], UiDrawing.GetFont(9, selected), Rectangle.Round(cell),
-                    selected ? Color.White : Palette.Text,
+                    selected ? Palette.OnAccent : Palette.Text,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             }
         }

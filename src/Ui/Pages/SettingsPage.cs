@@ -25,10 +25,10 @@ namespace OmenHub.Ui.Pages
         {
             CardPanel appearance = PageKit.MakeCard(this, 24, 16, 802, 170, "Настройки");
             PageKit.MakeLabel(appearance, "Тема", 20, 58, 9.5f, false, PageKit.RoleSub);
-            themeSegments = PageKit.MakeSegments(appearance, 120, 52, 260, new[] { "Тёмная", "Светлая" }, AppSettings.DarkTheme ? 0 : 1);
+            themeSegments = PageKit.MakeSegments(appearance, 120, 52, 260, new[] { "Светлая", "Тёмная" }, AppSettings.DarkTheme ? 1 : 0);
             themeSegments.SelectionChanged += delegate
             {
-                AppSettings.DarkTheme = themeSegments.SelectedIndex == 0;
+                AppSettings.DarkTheme = themeSegments.SelectedIndex == 1;
                 Palette.Apply(AppSettings.DarkTheme);
                 ThemeApplier.Apply(themeRoot);
                 AppSettings.MarkChanged();
@@ -65,7 +65,7 @@ namespace OmenHub.Ui.Pages
 
         public override void LoadFromSettings()
         {
-            themeSegments.SelectedIndex = AppSettings.DarkTheme ? 0 : 1;
+            themeSegments.SelectedIndex = AppSettings.DarkTheme ? 1 : 0;
             labSegments.SelectedIndex = AppSettings.LabEnabled ? 1 : 0;
         }
 

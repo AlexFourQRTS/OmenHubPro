@@ -124,8 +124,8 @@ namespace OmenHub.Ui.Shell
         {
             if (AppSettings.TakeUnsavedFlag()) PersistSettings();
             SensorSnapshot snapshot = ControlEngine.Latest;
-            statusLabel.Text = snapshot.StatusText + "    |    режим: " + AppSettings.Mode + "    |    питание: " + (snapshot.OnBattery ? "батарея" : "сеть");
-            statusLabel.ForeColor = snapshot.ThermalAlertActive ? Palette.Bad : Palette.SubText;
+            statusLabel.Text = snapshot.ThermalAlertActive ? snapshot.StatusText : "";
+            statusLabel.ForeColor = Palette.Bad;
             cpuFanChip.Value = snapshot.CpuFanRpm < 0 ? "—" : snapshot.CpuFanRpm + " об/мин";
             gpuFanChip.Value = snapshot.GpuFanRpm < 0 ? "—" : snapshot.GpuFanRpm + " об/мин";
             cpuFanChip.IsAlert = gpuFanChip.IsAlert = snapshot.ThermalAlertActive;

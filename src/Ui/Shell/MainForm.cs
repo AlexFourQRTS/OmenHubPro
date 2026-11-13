@@ -27,6 +27,7 @@ namespace OmenHub.Ui.Shell
             this.startHidden = startHidden;
             BuildFrame();
             BuildPages();
+            new SidebarSwitches(sidebar, this);
             ThemeApplier.Apply(this);
             ShowPage(0);
             WireShellEvents();

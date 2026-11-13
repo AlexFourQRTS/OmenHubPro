@@ -56,21 +56,12 @@ namespace OmenHub.Ui.Shell
             Load += placeChips;
         }
 
-        private int LabPageIndex { get { return pages.Length - 1; } }
-
-        /// <summary>The laboratory is the last page and is listed in the menu only when enabled in the settings.</summary>
-        private void ApplyLabVisibility()
-        {
-            navButtons[LabPageIndex].Visible = AppSettings.LabEnabled;
-            if (!AppSettings.LabEnabled && currentPage == LabPageIndex) ShowPage(0);
-        }
 
         private void BuildPages()
         {
             var settingsPage = new SettingsPage(this);
             settingsPage.FansHandedBack += delegate { ShowPage(currentPage); };
-            settingsPage.LabVisibilityChanged += delegate { ApplyLabVisibility(); };
-            pages = new PageBase[] { new OmenPage(), new LightingPage(), settingsPage, new LightingLabPage() };
+            pages = new PageBase[] { new OmenPage(), new LightingPage(), settingsPage };
             navButtons = new NavButton[pages.Length];
             for (int index = 0; index < pages.Length; index++)
             {

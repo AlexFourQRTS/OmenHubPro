@@ -18,7 +18,6 @@ namespace OmenHub.Core.Settings
         public static readonly int[] CpuWattChoices = { 20, 40, 50, 60 };
         public static readonly int[] GpuWattChoices = { 50, 80, 100, 130 };
         public static int CpuWatts = 40;
-        public static volatile bool LabEnabled = false;   // shows the lighting laboratory page in the menu
 
         public static volatile int GpuWatts = 100;
 

@@ -13,13 +13,10 @@ namespace OmenHub.Ui.Pages
         private readonly SegmentedControl themeSegments;
         private readonly SegmentedControl autostartSegments;
         private readonly Label autostartResultLabel;
-        private SegmentedControl labSegments;
 
         /// <summary>Raised when the user switches the fan mode back to BIOS auto from here.</summary>
         public event System.EventHandler FansHandedBack;
 
-        /// <summary>Raised when the lighting laboratory was switched on or off, so the menu can show or hide it.</summary>
-        public event System.EventHandler LabVisibilityChanged;
 
         public SettingsPage(Control themeRoot)
         {
@@ -42,7 +39,6 @@ namespace OmenHub.Ui.Pages
                 if (FansHandedBack != null) FansHandedBack(this, System.EventArgs.Empty);
             };
 
-            BuildExtrasCard();
             CardPanel startup = PageKit.MakeCard(this, 24, 202, 802, 100, "Запуск");
             PageKit.MakeLabel(startup, "Автозапуск", 20, 58, 9.5f, false, PageKit.RoleSub);
             autostartSegments = PageKit.MakeSegments(startup, 140, 52, 360, new[] { "Выключен", "При входе в Windows" }, AutostartTask.IsEnabled() ? 1 : 0);
@@ -50,23 +46,10 @@ namespace OmenHub.Ui.Pages
             autostartSegments.SelectionChanged += delegate { ChangeAutostart(); };
         }
 
-        private void BuildExtrasCard()
-        {
-            CardPanel extras = PageKit.MakeCard(this, 24, 318, 802, 100, "Дополнительно");
-            PageKit.MakeLabel(extras, "Лаборатория подсветки", 20, 52, 9.5f, false, PageKit.RoleSub);
-            labSegments = PageKit.MakeSegments(extras, 220, 46, 260, new[] { "Выключена", "Включена" }, AppSettings.LabEnabled ? 1 : 0);
-            labSegments.SelectionChanged += delegate
-            {
-                AppSettings.LabEnabled = labSegments.SelectedIndex == 1;
-                AppSettings.MarkChanged();
-                if (LabVisibilityChanged != null) LabVisibilityChanged(this, System.EventArgs.Empty);
-            };
-        }
 
         public override void LoadFromSettings()
         {
             themeSegments.SelectedIndex = AppSettings.DarkTheme ? 1 : 0;
-            labSegments.SelectedIndex = AppSettings.LabEnabled ? 1 : 0;
         }
 
         private void ChangeAutostart()

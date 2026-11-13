@@ -3,7 +3,7 @@ using OmenHub.Ui.Controls;
 
 namespace OmenHub.Ui.Pages
 {
-    /// <summary>Card with the four fan modes: BIOS auto, maximum, manual, curve.</summary>
+    /// <summary>Card with the three fan modes: BIOS auto, maximum, own RPM.</summary>
     public sealed class FanModeCard : CardPanel
     {
         private readonly SegmentedControl modeSegments;
@@ -13,7 +13,7 @@ namespace OmenHub.Ui.Pages
             Left = 24; Top = 16; Width = 802; Height = 100;
             PageKit.MakeLabel(this, "Режим вентиляторов", 20, 14, 11, true, PageKit.RoleText);
             modeSegments = PageKit.MakeSegments(this, 20, 48, 520,
-                new[] { "Авто (BIOS)", "Максимум", "Ручной", "По кривой" }, (int)AppSettings.Mode);
+                new[] { "Авто (BIOS)", "Максимум", "Ручной" }, (int)AppSettings.Mode);
             modeSegments.SelectionChanged += delegate
             {
                 AppSettings.Mode = (FanMode)modeSegments.SelectedIndex;

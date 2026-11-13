@@ -6,22 +6,18 @@ using OmenHub.Hardware.Sensors;
 
 namespace OmenHub.Hardware.Fans
 {
-    /// <summary>Applies the selected fan mode (auto / max / manual / curve) once per engine cycle.</summary>
+    /// <summary>Applies the selected fan mode (auto / max / own RPM) once per engine cycle.</summary>
     public sealed class FanController
     {
         private const int ReassertMaxSeconds = 20;
         private const int ReassertLevelSeconds = 10;
         private const int AlertReassertSeconds = 8;
-        private const int RampUpRpmPerCycle = 270;
-        private const int RampDownRpmPerCycle = 70;
         private const int NoMode = -99;
 
         private readonly ThermalAlert alert = new ThermalAlert();
         private int appliedMode = NoMode;
         private int lastCpuRpm = -1;
         private int lastGpuRpm = -1;
-        private int smoothedCpuRpm = -1;
-        private int smoothedGpuRpm = -1;
         private DateTime lastCommandTime = DateTime.MinValue;
 
         public void Apply(SensorSnapshot snapshot)
@@ -45,21 +41,9 @@ namespace OmenHub.Hardware.Fans
             if (mode == FanMode.Max) { ReassertMax(ReassertMaxSeconds); return; }
             if (mode == FanMode.Auto) return;
 
-            int cpuRpm, gpuRpm;
-            if (mode == FanMode.Manual)
-            {
-                cpuRpm = AppSettings.ManualCpuFanRpm;
-                gpuRpm = AppSettings.ManualGpuFanRpm;
-            }
-            else
-            {
-                cpuRpm = Smooth(ref smoothedCpuRpm, AppSettings.CpuCurve.RpmAt(TemperatureFor(AppSettings.CpuCurveSource, snapshot)));
-                gpuRpm = Smooth(ref smoothedGpuRpm, AppSettings.GpuCurve.RpmAt(TemperatureFor(AppSettings.GpuCurveSource, snapshot)));
-            }
-
             int floor = SafetyFloor(hottest);
-            cpuRpm = Math.Max(cpuRpm, floor);
-            gpuRpm = Math.Max(gpuRpm, floor);
+            int cpuRpm = Math.Max(AppSettings.ManualCpuFanRpm, floor);
+            int gpuRpm = Math.Max(AppSettings.ManualGpuFanRpm, floor);
             SendLevelIfNeeded(cpuRpm, gpuRpm, modeChanged);
         }
 
@@ -68,14 +52,12 @@ namespace OmenHub.Hardware.Fans
             BiosFanCommands.SetFanMax(mode == FanMode.Max);
             appliedMode = (int)mode;
             lastCpuRpm = lastGpuRpm = -1;
-            smoothedCpuRpm = smoothedGpuRpm = -1;
             AppLog.Write("fan mode -> " + mode);
         }
 
         private void ForgetAppliedState()
         {
             appliedMode = NoMode;
-            smoothedCpuRpm = smoothedGpuRpm = -1;
         }
 
         private void ReassertMax(int intervalSeconds)
@@ -97,27 +79,11 @@ namespace OmenHub.Hardware.Fans
             lastCommandTime = DateTime.Now;
         }
 
-        private static int Smooth(ref int smoothed, int target)
-        {
-            if (smoothed < 0) smoothed = target;
-            else smoothed = target > smoothed
-                ? Math.Min(target, smoothed + RampUpRpmPerCycle)
-                : Math.Max(target, smoothed - RampDownRpmPerCycle);
-            return smoothed;
-        }
 
         private static int SafetyFloor(double hottest)
         {
             return hottest >= 75 ? 3000 : hottest >= 70 ? 2200 : 0;
         }
 
-        private static double TemperatureFor(TemperatureSource source, SensorSnapshot snapshot)
-        {
-            double system = snapshot.SystemTemperature;
-            double gpu = snapshot.GpuTemperature;
-            if (source == TemperatureSource.System) return system;
-            if (source == TemperatureSource.Gpu) return gpu >= 0 ? gpu : system;
-            return Math.Max(system, gpu);
-        }
     }
 }

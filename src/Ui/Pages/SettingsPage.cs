@@ -12,8 +12,8 @@ namespace OmenHub.Ui.Pages
     {
         private readonly SegmentedControl themeSegments;
         private readonly SegmentedControl autostartSegments;
-        private SegmentedControl labSegments, overlaySegments;
         private readonly Label autostartResultLabel;
+        private SegmentedControl labSegments;
 
         /// <summary>Raised when the user switches the fan mode back to BIOS auto from here.</summary>
         public event System.EventHandler FansHandedBack;
@@ -52,10 +52,7 @@ namespace OmenHub.Ui.Pages
 
         private void BuildExtrasCard()
         {
-            CardPanel extras = PageKit.MakeCard(this, 24, 318, 802, 140, "Дополнительно");
-            PageKit.MakeLabel(extras, "Оверлей в играх", 20, 100, 9.5f, false, PageKit.RoleSub);
-            overlaySegments = PageKit.MakeSegments(extras, 220, 94, 260, new[] { "Выключен", "Включён" }, AppSettings.OverlayEnabled ? 1 : 0);
-            overlaySegments.SelectionChanged += delegate { AppSettings.OverlayEnabled = overlaySegments.SelectedIndex == 1; AppSettings.MarkChanged(); };
+            CardPanel extras = PageKit.MakeCard(this, 24, 318, 802, 100, "Дополнительно");
             PageKit.MakeLabel(extras, "Лаборатория подсветки", 20, 52, 9.5f, false, PageKit.RoleSub);
             labSegments = PageKit.MakeSegments(extras, 220, 46, 260, new[] { "Выключена", "Включена" }, AppSettings.LabEnabled ? 1 : 0);
             labSegments.SelectionChanged += delegate
@@ -70,7 +67,6 @@ namespace OmenHub.Ui.Pages
         {
             themeSegments.SelectedIndex = AppSettings.DarkTheme ? 0 : 1;
             labSegments.SelectedIndex = AppSettings.LabEnabled ? 1 : 0;
-            overlaySegments.SelectedIndex = AppSettings.OverlayEnabled ? 1 : 0;
         }
 
         private void ChangeAutostart()

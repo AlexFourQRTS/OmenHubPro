@@ -44,7 +44,7 @@ namespace OmenHub.Ui.Theme
         private static bool IsCustomDrawn(Control control)
         {
             return control is NavButton || control is ActionButton || control is SegmentedControl
-                || control is ValueSlider || control is MeterBar || control is CurveEditor || control is StatChip;
+                || control is ValueSlider || control is MeterBar || control is StatChip;
         }
     }
 }

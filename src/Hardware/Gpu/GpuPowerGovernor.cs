@@ -82,7 +82,7 @@ namespace OmenHub.Hardware.Gpu
             catch { onBattery = false; }
             if (onBattery) return AppSettings.BatteryGpuWatts;
             if (AppSettings.ProAutoEnabled) return AppSettings.ProAutoGpuWatts;
-            return AppSettings.GpuLimitEnabled ? AppSettings.GpuWatts : 0;
+            return AppSettings.GpuWatts;
         }
 
         /// <summary>Proportional step: lower the cap fast when over the target, raise it slowly when there is headroom.</summary>

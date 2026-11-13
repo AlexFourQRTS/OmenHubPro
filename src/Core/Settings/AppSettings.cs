@@ -12,26 +12,28 @@ namespace OmenHub.Core.Settings
         public const int ProAutoWatts = 40;
         public const int BatteryWatts = 20;
         public const int BatteryGpuWatts = 30;   // GPU limit while on battery (with the battery economy profile)
-        public const int ProAutoGpuWatts = 110;  // GPU limit of the "Pro auto" profile on mains
-        public const int MinimumCpuWatts = 20;
-        public const int MaximumCpuWatts = 75;
-        public const int CpuWattsStep = 5;
+        public const int ProAutoGpuWatts = 100;  // GPU limit of the "Pro auto" profile on mains
         public const int MaximumFanRpm = 6000;
 
         public static bool DarkTheme = true;
         public static FanMode Mode = FanMode.Auto;
         public static int ManualCpuFanRpm = 2400;
         public static int ManualGpuFanRpm = 2400;
-        public static int CpuWatts = 45;
-        public static volatile bool CpuLimitEnabled = false;   // false = no limit (the maximum of the range is applied)
+        public static readonly int[] CpuWattChoices = { 20, 40, 50, 60 };
+        public static readonly int[] GpuWattChoices = { 50, 80, 100, 130 };
+        public static int CpuWatts = 40;
         public static bool ProAutoEnabled = true;
         public static volatile bool LabEnabled = false;   // shows the lighting laboratory page in the menu
 
-        public const int MinimumGpuWatts = 30;
-        public const int MaximumGpuWatts = 130;   // the card supports 140 W, more than 130 makes no sense
-        public const int GpuWattsStep = 5;
-        public static volatile bool GpuLimitEnabled = false;
-        public static volatile int GpuWatts = 80;
+        public static volatile int GpuWatts = 100;
+
+        /// <summary>The allowed value closest to the given one (old settings may hold anything).</summary>
+        public static int Snap(int[] choices, int watts)
+        {
+            int best = choices[0];
+            foreach (int choice in choices) if (System.Math.Abs(choice - watts) < System.Math.Abs(best - watts)) best = choice;
+            return best;
+        }
 
 
         public static ZoneLighting KeyboardLighting = new ZoneLighting();   // plain white by default
@@ -56,8 +58,8 @@ namespace OmenHub.Core.Settings
         {
             if (!ProAutoEnabled) return;
             ProAutoEnabled = false;
-            CpuWatts = ProAutoWatts; CpuLimitEnabled = true;
-            GpuWatts = ProAutoGpuWatts; GpuLimitEnabled = true;
+            CpuWatts = ProAutoWatts;
+            GpuWatts = ProAutoGpuWatts;
         }
 
         /// <summary>Returns true once after each change so a timer can persist it.</summary>
